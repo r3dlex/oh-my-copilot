@@ -9,7 +9,7 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
-      - run: npm ci
+      - run: npm install
       - run: npm run typecheck
       - name: Run archgate check
         run: |
