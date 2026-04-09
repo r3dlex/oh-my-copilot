@@ -29,6 +29,10 @@ Every software team has work that spans implementation, architecture, security r
 | **PSM** | Plugin State Manager with SQLite persistence across sessions |
 | **SWE-bench** | Benchmark harness for reproducible evaluation |
 
+<p align="center">
+  <img src="assets/buddy-swarm.png" alt="OMP swarm mode" width="600"/>
+</p>
+
 ## Quick Start
 
 ```bash
@@ -41,6 +45,10 @@ omc setup
 # Start using OMP skills
 /omc-setup
 ```
+
+<p align="center">
+  <img src="assets/buddy-playful.png" alt="OMP in action" width="600"/>
+</p>
 
 ## Architecture
 
