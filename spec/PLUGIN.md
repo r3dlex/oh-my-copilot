@@ -38,6 +38,16 @@ Every OMP plugin must have a `plugin.json` at the project root:
     { "id": "performance" },
     { "id": "integration" }
   ],
+  "skills": [
+    "./skills/autopilot",
+    "./skills/ralph",
+    "./skills/ultrawork",
+    "./skills/team",
+    "./skills/ecomode",
+    "./skills/swarm",
+    "./skills/pipeline",
+    "./skills/plan"
+  ],
   "hooks": [
     { "id": "keyword-detector",    "entry": "./dist/hooks/keyword-detector.mjs" },
     { "id": "delegation-enforcer","entry": "./dist/hooks/delegation-enforcer.mjs" },
