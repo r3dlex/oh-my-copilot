@@ -5,22 +5,23 @@ Each section corresponds to commits between conceptual version boundaries (no gi
 
 ---
 
-## [Unreleased] — post oh-my-copilot v1.2.0
+## [v1.3.0] — Continuous release pipeline, dual-registry publish
 
-Commits: `fd366e6`…`e82e807` (HEAD)
+Commits: `fd366e6`…`a26f673`
 
 ### Features
-- **Hybrid npm publish** — every push to `main` publishes to GitHub Packages (`@r3dlex/oh-my-copilot`) automatically via `GITHUB_TOKEN`; npmjs.com (`oh-my-copilot`) publishes when `NPM_TOKEN` secret is configured (`ee42604`)
-- **Continuous alpha releases** — every push to `main` publishes `X.Y.Z-alpha.<sha>` to the `alpha` dist-tag on both registries; tagged commits (`vX.Y.Z`) publish stable to `latest` (`ec8fffa`)
-- **npm release CI pipeline** — GitHub Actions `release.yml` with four jobs: `build` (version resolution + artifact), `test` (CHANGELOG gate for stable only), `publish` (dual-registry), `github-release` (stable only, attaches `.tgz`) (`5a3ae67`)
+- **Continuous alpha releases** — every push to `main` publishes `X.Y.Z-alpha.<sha>` to the `alpha` dist-tag; tagged commits (`vX.Y.Z`) publish stable to `latest` (`ec8fffa`)
+- **Hybrid dual-registry publish** — publishes to GitHub Packages (`@r3dlex/oh-my-copilot`) always via `GITHUB_TOKEN`; publishes to npmjs.com (`oh-my-copilot`) when `NPM_TOKEN` secret is configured; graceful skip with notice if absent (`ee42604`)
+- **npm release CI pipeline** — `release.yml` with four jobs: `build` (version resolution + artifact), `test` (CHANGELOG gate for stable only), `publish` (dual-registry), `github-release` (stable only, attaches `.tgz`) (`5a3ae67`)
 
 ### Fixes
-- **Workflow parse error** — replaced `secrets.NPM_TOKEN != ''` in `if:` conditions with a dedicated check step outputting `available=true/false`; GitHub blocks direct secret comparison in expressions (`e82e807`)
-- **Version-agnostic plugin assertions** — `plugin-install.test.mts` version checks now read from `packageJson().version` instead of hardcoded `"1.0.0"`; `marketplace.json` metadata.version synced to `1.2.0` (`7f99f14`)
+- **Workflow parse error** — replaced `secrets.NPM_TOKEN != ''` in step `if:` conditions with a dedicated check step outputting `available=true/false` (`e82e807`)
+- **Version-agnostic plugin test assertions** — `plugin-install.test.mts` now reads version from `packageJson().version`; `marketplace.json` metadata.version synced (`7f99f14`)
 - **Stale agent/skill counts** — JSON descriptors and e2e tests corrected to 23 agents / 25 skills (`74c5122`)
 
 ### Documentation
-- **Agent and skill docs normalized** — all 23 agent descriptors and 25 skill `SKILL.md` files updated to consistent format with accurate counts (`fd366e6`)
+- **CHANGELOG rewritten** — entries now derived from actual git log commit ranges per version (`a26f673`)
+- **Agent and skill docs normalized** — all 23 agent descriptors and 25 skill `SKILL.md` files updated to consistent format (`fd366e6`)
 
 ---
 
