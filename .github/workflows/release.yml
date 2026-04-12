@@ -63,8 +63,8 @@ jobs:
       - name: Branch guard (tag must be on main)
         if: steps.version.outputs.release_type == 'stable'
         run: |
-          git branch --contains HEAD | grep -q main || \
-            { echo "::error::Tagged commit is not reachable from main branch"; exit 1; }
+          git branch -r --contains HEAD | grep -q 'origin/main' || \
+            { echo "::error::Tagged commit is not reachable from origin/main"; exit 1; }
 
       - uses: actions/setup-node@v4
         with:
