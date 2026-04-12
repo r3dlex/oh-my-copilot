@@ -38,9 +38,10 @@ describe("plugin installation", () => {
       expect(json.name).toBe("oh-my-copilot");
     });
 
-    it("should have version 1.0.0", () => {
+    it("should have version matching package.json", () => {
       const json = pluginJson();
-      expect(json.version).toBe("1.0.0");
+      const pkg = packageJson();
+      expect(json.version).toBe(pkg.version);
       // plugins is not a field in plugin.json (it's in marketplace.json)
       expect(json.name).toBe("oh-my-copilot");
     });
@@ -89,7 +90,7 @@ describe("plugin installation", () => {
       expect(json.metadata).toBeDefined();
       const meta = json.metadata as Record<string, unknown>;
       expect(meta.description).toBeDefined();
-      expect(meta.version).toBe("1.0.0");
+      expect(meta.version).toBe(packageJson().version);
     });
 
     it("should list at least one plugin", () => {

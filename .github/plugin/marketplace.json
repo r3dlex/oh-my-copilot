@@ -1,9 +1,11 @@
 {
   "name": "oh-my-copilot",
-  "owner": { "name": "r3dlex" },
+  "owner": {
+    "name": "r3dlex"
+  },
   "metadata": {
     "description": "Agent orchestration engine for GitHub Copilot CLI",
-    "version": "1.0.0"
+    "version": "1.2.0"
   },
   "plugins": [
     {
