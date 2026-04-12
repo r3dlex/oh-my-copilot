@@ -1,13 +1,42 @@
----
-name: spending
-description: Inspect and manage OMP premium request usage. Use when user says spending:, /spending, or wants to check or reset their API request counts.
----
+# Skill: Spending
 
-# Spending Skill
+## Metadata
 
-Trigger: `/omp:spending` or magic keyword `spending:`
+| Field | Value |
+|-------|-------|
+| **ID** | `spending` |
+| **Keywords** | `spending:`, `/spending`, `/omp:spending` |
+| **Tier** | user |
+| **Source** | `src/skills/spending.mts` |
 
-Track and manage premium API request usage across sessions.
+## Description
+
+Inspect and manage OMP premium request usage across sessions and months. Track API request consumption against plan limits with monthly and session-level granularity and configurable warning thresholds.
+
+## Interface
+
+```typescript
+interface SkillInput {
+  action: 'status' | 'reset';
+}
+
+interface SkillOutput {
+  status: "ok" | "error";
+  message: string;
+  data?: {
+    session: number;
+    monthly: number;
+    monthlyLimit: number;
+    monthlyPercentage: number;
+    plan: string;
+    month: string;
+  };
+}
+```
+
+## Implementation
+
+Reads and updates spending state from `~/.omp/state/spending-monthly.json`. Tracks session and monthly premium request counts. Automatically resets monthly counter when the calendar month changes and session counter when the session ID changes. Resolves configuration from local > global > hardcoded defaults.
 
 ## Actions
 

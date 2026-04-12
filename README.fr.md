@@ -30,11 +30,11 @@ omp setup
 
 ## Fonctionnalites
 
-- **Orchestration Multi-Agent** - 18 agents specialises pour differentes taches
+- **Orchestration Multi-Agent** - 23 agents specialises pour differentes taches
 - **Integration Serveur MCP** - Connexion aux services et outils externes
 - **Affichage HUD** - Suivi de l'etat et du contexte en temps reel
 - **Plugin State Manager** - Etat fiable a travers les sessions
-- **30+ Skills** - Chargement paresseux pour les fonctionnalites etendues
+- **25 Skills** - Chargement paresseux pour les fonctionnalites etendues
 
 <p align="center">
   <img src="assets/buddy-swarm.png" alt="OMP swarm mode" width="600"/>

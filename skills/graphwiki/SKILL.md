@@ -1,13 +1,39 @@
----
-name: graphwiki
-description: Direct access to graphwiki CLI for graph querying, path finding, linting, and refinement. Use when user says graphwiki:, /graphwiki, or asks to query/lint/refine a knowledge graph. Install: npm install -g graphwiki
----
+# Skill: GraphWiki
 
-# GraphWiki Skill
+## Metadata
 
-Trigger: `/omp:graphwiki` or magic keyword `graphwiki:`
+| Field | Value |
+|-------|-------|
+| **ID** | `graphwiki` |
+| **Keywords** | `graphwiki:`, `/graphwiki`, `/omp:graphwiki` |
+| **Tier** | developer |
+| **Source** | `src/skills/graphwiki.mts` |
 
-Provides direct access to graphwiki CLI features beyond the generic graph-provider interface.
+## Description
+
+Direct access to graphwiki CLI for graph querying, path finding, linting, and refinement. Provides comprehensive knowledge graph management beyond the generic graph-provider interface, including zero-token path finding and structural graph analysis.
+
+## Interface
+
+```typescript
+interface SkillInput {
+  action: 'query' | 'path' | 'lint' | 'refine' | 'build' | 'status' | 'clean';
+  question?: string;
+  from?: string;
+  to?: string;
+  options?: { review?: boolean; update?: boolean };
+}
+
+interface SkillOutput {
+  status: "ok" | "error";
+  message: string;
+  data?: unknown;
+}
+```
+
+## Implementation
+
+Provides a thin wrapper around the graphwiki CLI tool (`npm install -g graphwiki`). Routes user actions to appropriate graphwiki subcommands and parses output into structured responses.
 
 ## Actions
 

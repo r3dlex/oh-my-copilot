@@ -1,13 +1,38 @@
----
-name: graph-provider
-description: Manage and use the active graph provider (graphify or graphwiki). Use when user says graph:, /graph-provider, or wants to switch/build/query the active knowledge graph provider.
----
+# Skill: Graph Provider
 
-# Graph Provider Skill
+## Metadata
 
-Trigger: `/omp:graph-provider` or magic keyword `graph:`
+| Field | Value |
+|-------|-------|
+| **ID** | `graph-provider` |
+| **Keywords** | `graph:`, `/graph-provider` |
+| **Tier** | developer |
+| **Source** | `src/skills/graph-provider.mts` |
 
-Manage the active knowledge graph provider. Delegates to whichever adapter is configured (graphify or graphwiki).
+## Description
+
+Manage and use the active graph provider (graphify or graphwiki). Delegates to whichever adapter is configured, allowing users to switch between providers, build graphs, and query the active knowledge graph.
+
+## Interface
+
+```typescript
+interface SkillInput {
+  action: 'get' | 'set' | 'list' | 'build' | 'status' | 'clean' | 'query';
+  provider?: string;
+  question?: string;
+  options?: { incremental?: boolean };
+}
+
+interface SkillOutput {
+  status: "ok" | "error";
+  message: string;
+  data?: unknown;
+}
+```
+
+## Implementation
+
+Manages the active graph provider configuration stored in `.omp/config.json`. Routes actions to the configured provider adapter (graphify or graphwiki). Provides a unified interface for graph operations across multiple provider implementations.
 
 ## Actions
 

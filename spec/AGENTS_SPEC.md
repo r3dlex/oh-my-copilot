@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-OMP exposes 18 agents registered in `plugin.json`. Every agent is a TypeScript module that exports a `run(params: AgentParams): Promise<AgentResult>` function. This document defines the model tiers, agent template, full agent registry, and delegation enforcement.
+OMP exposes 23 agents registered in `plugin.json`. Every agent is a TypeScript module that exports a `run(params: AgentParams): Promise<AgentResult>` function. This document defines the model tiers, agent template, full agent registry, and delegation enforcement.
 
 ## 2. Model Tiers
 

@@ -9,7 +9,7 @@ rules: false
 
 ## Context
 
-oh-my-copilot is a multi-agent orchestration plugin for GitHub Copilot CLI with 18 agents, 30+ skills, and a growing plugin architecture. Architectural decisions have previously been tracked in `spec/*.md` files and `.omp/plans/` documents without automated enforcement.
+oh-my-copilot is a multi-agent orchestration plugin for GitHub Copilot CLI with 23 agents, 25 skills, and a growing plugin architecture. Architectural decisions have previously been tracked in `spec/*.md` files and `.omp/plans/` documents without automated enforcement.
 
 ## Decision
 

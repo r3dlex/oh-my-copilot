@@ -1,13 +1,41 @@
----
-name: graphify
-description: Build and manage a knowledge graph of the codebase using the graphify CLI. Use when user says /omp:graphify, "graph build", "build graph", or "graphify". Reduces token usage by 70x+ per query by replacing raw file searches with graph lookups.
----
+# Skill: Graphify
 
-# Graphify Skill
+## Metadata
 
-Trigger: `/omp:graphify` or magic keyword `graph:`
+| Field | Value |
+|-------|-------|
+| **ID** | `graphify` |
+| **Keywords** | `graph build`, `build graph`, `/graphify`, `/omp:graphify` |
+| **Tier** | developer |
+| **Source** | `src/skills/graphify.mts` |
 
-This skill is scoped to OMP plugin sessions (/omp:graphify). The global ~/.claude/skills/graphify skill (/graphify) is for standalone Claude Code sessions — no conflict.
+## Description
+
+Build and manage a knowledge graph of the codebase using the graphify CLI. Reduces token usage by 70x+ per query by replacing raw file searches with graph lookups. This OMP plugin skill is scoped to `/omp:graphify` in OMP sessions. The standalone `~/.claude/skills/graphify` skill (`/graphify`) is for standalone Claude Code sessions — no conflict.
+
+## Interface
+
+```typescript
+interface SkillInput {
+  action: 'build' | 'status' | 'clean';
+  options?: { incremental?: boolean };
+}
+
+interface SkillOutput {
+  status: "ok" | "error";
+  message: string;
+  data?: {
+    nodeCount?: number;
+    edgeCount?: number;
+    communityCount?: number;
+    outputPath?: string;
+  };
+}
+```
+
+## Implementation
+
+Invokes the `graphify` CLI tool to analyze the workspace and generate a knowledge graph stored in `graphify-out/graph.json`. Provides status reporting on graph size and last modified time, and can incrementally update existing graphs.
 
 ## Actions
 
