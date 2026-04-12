@@ -35,7 +35,7 @@ describe("plugin installation", () => {
   describe("plugin.json", () => {
     it("should have a valid name", () => {
       const json = pluginJson();
-      expect(json.name).toBe("oh-my-copilot");
+      expect(json.name).toBe("oh-my-githubcopilot");
     });
 
     it("should have version matching package.json", () => {
@@ -43,7 +43,7 @@ describe("plugin installation", () => {
       const pkg = packageJson();
       expect(json.version).toBe(pkg.version);
       // plugins is not a field in plugin.json (it's in marketplace.json)
-      expect(json.name).toBe("oh-my-copilot");
+      expect(json.name).toBe("oh-my-githubcopilot");
     });
 
     it("should reference a repository", () => {
@@ -76,7 +76,7 @@ describe("plugin installation", () => {
       const path = join(root, ".github/plugin/marketplace.json");
       expect(existsSync(path)).toBe(true);
       const json = marketplaceJson();
-      expect(json.name).toBe("oh-my-copilot");
+      expect(json.name).toBe("oh-my-githubcopilot");
     });
 
     it("should reference the owner r3dlex", () => {
@@ -129,7 +129,7 @@ describe("plugin installation", () => {
 
     it("should have Apache-2.0 license and required scripts", () => {
       const json = packageJson();
-      expect(json.name).toBe("oh-my-copilot");
+      expect(json.name).toBe("oh-my-githubcopilot");
       expect(json.license).toBe("Apache-2.0");
       const scripts = json.scripts as Record<string, string>;
       expect(scripts["sync-claude-plugin"]).toBeDefined();

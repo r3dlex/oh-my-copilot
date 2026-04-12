@@ -30,7 +30,7 @@ describe("CLI smoke tests", () => {
 
   it("should respond to the version subcommand", async () => {
     const { stdout, exitCode } = await run("version");
-    expect(stdout).toContain("oh-my-copilot");
+    expect(stdout).toContain("oh-my-githubcopilot");
     expect(stdout).toMatch(/v\d+\.\d+\.\d+/);
     expect(exitCode).toBe(0);
   });

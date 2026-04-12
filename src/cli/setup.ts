@@ -46,7 +46,7 @@ async function runBaseSetup(): Promise<void> {
   console.log("\nFirst-run guidance:");
   console.log("  Run 'omp hud' to check the HUD display.");
   console.log("  Run 'omp setup --mcp-only' to configure external MCP servers.");
-  console.log("  Or run '/oh-my-copilot:setup' from within a Copilot session.");
+  console.log("  Or run '/oh-my-githubcopilot:setup' from within a Copilot session.");
 }
 
 // ---------------------------------------------------------------------------

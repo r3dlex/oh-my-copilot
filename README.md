@@ -1,4 +1,4 @@
-# oh-my-copilot (OMP)
+# oh-my-githubcopilot (OMP)
 
 <p align="center">
   <img src="assets/omp-banner.png" alt="Oh My Copilot" width="100%"/>
@@ -8,9 +8,9 @@
   Multi-agent orchestration for GitHub Copilot CLI — powered by 23 specialized agents, 25 skills, and a real-time HUD.
 </p>
 
-[![npm version](https://img.shields.io/npm/v/oh-my-copilot?color=red)](https://npmjs.com/package/oh-my-copilot)
-[![npm downloads](https://img.shields.io/npm/dm/oh-my-copilot?color=blue)](https://npmjs.com/package/oh-my-copilot)
-[![License: MIT](https://img.shields.io/npm/l/oh-my-copilot?color=green)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/oh-my-githubcopilot?color=red)](https://npmjs.com/package/oh-my-githubcopilot)
+[![npm downloads](https://img.shields.io/npm/dm/oh-my-githubcopilot?color=blue)](https://npmjs.com/package/oh-my-githubcopilot)
+[![License: MIT](https://img.shields.io/npm/l/oh-my-githubcopilot?color=green)](LICENSE)
 [![Sponsor](https://img.shields.io/static/v1?label=Sponsor&message=r3dlex&color=EA4949&logo=github-sponsors)](https://github.com/sponsors/r3dlex)
 
 ---
@@ -37,7 +37,7 @@ Every software team juggles implementation, architecture, security review, testi
 
 ```bash
 # Install
-npm install -g oh-my-copilot
+npm install -g oh-my-githubcopilot
 
 # Initialize (creates ~/.omp/ config)
 omp setup
@@ -54,7 +54,7 @@ omp setup
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                     oh-my-copilot                       │
+│                     oh-my-githubcopilot                       │
 ├─────────────────────────────────────────────────────────┤
 │  Agents         │  Hooks        │  PSM (SQLite)        │
 │  ─────────────  │  ──────────   │  ──────────────      │
@@ -136,4 +136,4 @@ If OMP saves you time, consider sponsoring the maintainer:
 
 Every sponsorship helps keep development going.
 
-MIT License | [GitHub](https://github.com/r3dlex/oh-my-copilot)
+MIT License | [GitHub](https://github.com/r3dlex/oh-my-githubcopilot)

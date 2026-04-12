@@ -13,7 +13,7 @@ The Plugin State Manager (PSM) needs durable, transactional state across session
 
 ## Decision
 
-The Plugin State Manager (PSM) uses `better-sqlite3` for local state persistence. PSM state is stored at `~/.omp/state/omp.db` — **not** `.omp/state/`, which is used by OMP (oh-my-copilot's own orchestration session state).
+The Plugin State Manager (PSM) uses `better-sqlite3` for local state persistence. PSM state is stored at `~/.omp/state/omp.db` — **not** `.omp/state/`, which is used by OMP (oh-my-githubcopilot's own orchestration session state).
 
 - OMP session state: `.omp/state/` (CLAUDE.md worktree_paths)
 - OMP PSM state: `~/.omp/state/omp.db` (this ADR)

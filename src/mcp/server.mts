@@ -253,7 +253,7 @@ async function handleCallTool(name: string, args: Record<string, unknown>) {
 
 // --- Server Startup ---
 const server = new Server(
-  { name: "oh-my-copilot", version: "1.0.0" },
+  { name: "oh-my-githubcopilot", version: "1.0.0" },
   {
     capabilities: { tools: {} },
   }

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
   "mcpServers": {
-    "oh-my-copilot": {
+    "oh-my-githubcopilot": {
       "type": "stdio",
       "command": "node",
       "args": ["./dist/mcp/server.mjs"],

@@ -13,11 +13,11 @@ If you discover a security vulnerability, please report it responsibly.
 **Please do NOT file a public GitHub issue** for security vulnerabilities. Instead, please follow one of these channels:
 
 1. **GitHub Security Advisories** (preferred)
-   - Navigate to the [Security Advisories](https://github.com/r3dlex/oh-my-copilot/security/advisories) page
+   - Navigate to the [Security Advisories](https://github.com/r3dlex/oh-my-githubcopilot/security/advisories) page
    - Click "Report a vulnerability" to submit a confidential report
 
 2. **Email** (if GitHub advisories are unavailable)
-   - Send details to `omp@oh-my-copilot.dev` with subject line: `[SECURITY]`
+   - Send details to `omp@oh-my-githubcopilot.dev` with subject line: `[SECURITY]`
 
 ## What to Include
 

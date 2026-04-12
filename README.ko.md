@@ -1,12 +1,12 @@
 [English](README.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Français](README.fr.md) | [Italiano](README.it.md) | [日本語](README.ja.md) | [한국어](README.ko.md) | [Português](README.pt.md) | [Русский](README.ru.md) | [Türkçe](README.tr.md) | [Tiếng Việt](README.vi.md) | [中文](README.zh.md)
 
-# oh-my-copilot
+# oh-my-githubcopilot
 <p align="center">
   <img src="assets/omp-banner.png" alt="Oh My Copilot" width="100%"/>
 </p>
 
-[![npm version](https://img.shields.io/npm/v/oh-my-copilot?color=cb3837)](https://www.npmjs.com/package/oh-my-copilot)
-[![npm downloads](https://img.shields.io/npm/dm/oh-my-copilot?color=blue)](https://www.npmjs.com/package/oh-my-copilot)
+[![npm version](https://img.shields.io/npm/v/oh-my-githubcopilot?color=cb3837)](https://www.npmjs.com/package/oh-my-githubcopilot)
+[![npm downloads](https://img.shields.io/npm/dm/oh-my-githubcopilot?color=blue)](https://www.npmjs.com/package/oh-my-githubcopilot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 **Oh-My-Copilot (OMP)** 은 GitHub Copilot에 모던한 워크플로 오케스트레이션과 에이전트 AI 기능을 추가하는 플러그인 및 확장 기능입니다.
@@ -20,7 +20,7 @@
 
 ```bash
 # 설치
-npm install -g oh-my-copilot
+npm install -g oh-my-githubcopilot
 
 # 설정
 omp setup

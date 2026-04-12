@@ -111,7 +111,7 @@ jobs:
           BASE_VERSION="${{ needs.build.outputs.base_version }}"
           if ! grep -qF "v${BASE_VERSION}" CHANGELOG.md; then
             echo "::error::CHANGELOG.md does not contain a section for version ${BASE_VERSION}"
-            echo "::error::Add a heading like '# oh-my-copilot v${BASE_VERSION}' with release notes before tagging."
+            echo "::error::Add a heading like '# oh-my-githubcopilot v${BASE_VERSION}' with release notes before tagging."
             exit 1
           fi
           echo "CHANGELOG.md contains section for v${BASE_VERSION} ✓"
@@ -195,18 +195,18 @@ jobs:
       - name: Publish to GitHub Packages
         if: ${{ !inputs.dry-run }}
         run: |
-          npm pkg set name="@r3dlex/oh-my-copilot"
+          npm pkg set name="@r3dlex/oh-my-githubcopilot"
           npm publish --registry https://npm.pkg.github.com --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }} || echo "GitHub Packages publish skipped (may already exist)"
-          npm pkg set name="oh-my-copilot"
+          npm pkg set name="oh-my-githubcopilot"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to GitHub Packages (dry run)
         if: ${{ inputs.dry-run }}
         run: |
-          npm pkg set name="@r3dlex/oh-my-copilot"
+          npm pkg set name="@r3dlex/oh-my-githubcopilot"
           npm publish --dry-run --registry https://npm.pkg.github.com --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
-          npm pkg set name="oh-my-copilot"
+          npm pkg set name="oh-my-githubcopilot"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -224,7 +224,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           PUBLISH_VERSION="${{ needs.build.outputs.publish_version }}"
-          if npm view "oh-my-copilot@${PUBLISH_VERSION}" version 2>/dev/null | grep -q "${PUBLISH_VERSION}"; then
+          if npm view "oh-my-githubcopilot@${PUBLISH_VERSION}" version 2>/dev/null | grep -q "${PUBLISH_VERSION}"; then
             echo "already_published=true" >> "$GITHUB_OUTPUT"
             echo "Version ${PUBLISH_VERSION} already on npmjs.com, skipping."
           else

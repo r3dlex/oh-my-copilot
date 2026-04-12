@@ -11,7 +11,7 @@ Every OMP plugin must have a `plugin.json` at the project root:
 ```json
 {
   "schemaVersion": "1.0",
-  "name": "oh-my-copilot",
+  "name": "oh-my-githubcopilot",
   "version": "1.0.0",
   "description": "Multi-agent orchestration plugin for GitHub Copilot CLI",
   "entryPoints": {
@@ -69,17 +69,17 @@ The `marketplace.json` file at the project root enables discovery by the Copilot
   "registryVersion": "1.0",
   "plugins": [
     {
-      "id": "oh-my-copilot",
+      "id": "oh-my-githubcopilot",
       "name": "Oh My Copilot",
       "version": "1.0.0",
       "description": "Multi-agent orchestration layer with 23 agents, 25 skills, HUD, PSM, and MCP server",
       "keywords": ["agents", "orchestration", "autopilot", "HUD", "MCP"],
-      "homepage": "https://github.com/oh-my-copilot/oh-my-copilot",
-      "repository": "https://github.com/oh-my-copilot/oh-my-copilot",
+      "homepage": "https://github.com/oh-my-githubcopilot/oh-my-githubcopilot",
+      "repository": "https://github.com/oh-my-githubcopilot/oh-my-githubcopilot",
       "license": "MIT",
       "author": {
         "name": "OMP Contributors",
-        "email": "omp@oh-my-copilot.dev"
+        "email": "omp@oh-my-githubcopilot.dev"
       },
       "entryPoints": {
         "cli": "./bin/omp.mjs",
@@ -99,9 +99,9 @@ The `marketplace.json` file at the project root enables discovery by the Copilot
 
 OMP is discovered by the Copilot CLI through the following search paths, checked in order:
 
-1. `~/.claude/plugins/oh-my-copilot/plugin.json`
-2. `{cwd}/node_modules/oh-my-copilot/plugin.json`
-3. `{cwd}/.claude/plugins/oh-my-copilot/plugin.json`
+1. `~/.claude/plugins/oh-my-githubcopilot/plugin.json`
+2. `{cwd}/node_modules/oh-my-githubcopilot/plugin.json`
+3. `{cwd}/.claude/plugins/oh-my-githubcopilot/plugin.json`
 4. `{cwd}/.omp/plugin.json`
 5. The `OMP_PLUGIN_PATH` environment variable (colon-separated)
 
@@ -140,7 +140,7 @@ OMP can operate as a standalone plugin or as a `.claude-plugin/` embedded within
 ```
 {project}/
   .claude-plugin/
-    oh-my-copilot/
+    oh-my-githubcopilot/
       plugin.json        ← symlink or copy
       dist/
         cli/
@@ -157,9 +157,9 @@ OMP supports three installation methods:
 
 | Method | Command | Use case |
 |--------|---------|----------|
-| Global plugin | `copilot plugin install oh-my-copilot` | Shared across all projects |
-| Project dependency | `npm install oh-my-copilot --save-dev` | Pinned version per project |
-| Submodule | `git submodule add <repo> .claude-plugin/oh-my-copilot` | Embedded, version-controlled |
+| Global plugin | `copilot plugin install oh-my-githubcopilot` | Shared across all projects |
+| Project dependency | `npm install oh-my-githubcopilot --save-dev` | Pinned version per project |
+| Submodule | `git submodule add <repo> .claude-plugin/oh-my-githubcopilot` | Embedded, version-controlled |
 
 ## 8. Peer Dependencies
 

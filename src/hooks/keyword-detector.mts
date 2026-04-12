@@ -135,7 +135,7 @@ export function processHook(input: HookInput): HookOutput {
 
     // Rewrite prompt to invoke the skill
     const taskPart = input.prompt.slice(match.position + match.keyword.length).trim();
-    const rewritten = `/oh-my-copilot:${match.skillId}${taskPart ? ` ${taskPart}` : ""}`;
+    const rewritten = `/oh-my-githubcopilot:${match.skillId}${taskPart ? ` ${taskPart}` : ""}`;
 
     log.push(`Keyword detected: "${match.keyword}" → skill: ${match.skillId}`);
     log.push(`Rewritten: "${rewritten}"`);

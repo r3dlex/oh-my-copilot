@@ -22,67 +22,67 @@ describe("keyword-detector hook", () => {
     it("should detect autopilot: keyword", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "autopilot: do something" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:autopilot");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:autopilot");
       expect(result.mutations).toContainEqual(expect.objectContaining({ type: "set_mode", mode: "autopilot" }));
     });
 
     it("should detect ralph: keyword", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "ralph: fix the bug" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:ralph");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:ralph");
     });
 
     it("should detect ulw: keyword", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "ulw:" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:ultrawork");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:ultrawork");
     });
 
     it("should detect team: keyword", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "team: work on this" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:team");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:team");
     });
 
     it("should detect eco: keyword", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "eco: enable" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:ecomode");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:ecomode");
     });
 
     it("should detect /autopilot slash form", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/autopilot run" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:autopilot");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:autopilot");
     });
 
     it("should detect /ralph slash form", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/ralph fix issue" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:ralph");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:ralph");
     });
 
     it("should detect /team slash form", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/team" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:team");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:team");
     });
 
     it("should handle keyword-only prompt with no task", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "autopilot:" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toBe("/oh-my-copilot:autopilot");
+      expect(result.modifiedPrompt).toBe("/oh-my-githubcopilot:autopilot");
     });
 
     it("should preserve task part after keyword", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "ralph: implement the feature" });
-      expect(result.modifiedPrompt).toBe("/oh-my-copilot:ralph implement the feature");
+      expect(result.modifiedPrompt).toBe("/oh-my-githubcopilot:ralph implement the feature");
     });
 
     it("should handle planner keyword", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "plan: some task" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:omp-plan");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:omp-plan");
     });
 
     it("should include latency in result", () => {
@@ -100,51 +100,51 @@ describe("keyword-detector hook", () => {
     it("should detect graphify: keyword", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "graphify: build" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:graphify");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:graphify");
     });
 
     it("should detect graphwiki: keyword", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "graphwiki: query what is X?" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:graphwiki");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:graphwiki");
     });
 
     it("should detect graph: keyword and route to graph-provider", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "graph: status" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:graph-provider");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:graph-provider");
       expect(result.mutations).toContainEqual(expect.objectContaining({ type: "set_mode", mode: "graph-provider" }));
     });
 
     it("should detect spending: keyword", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "spending: status" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:spending");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:spending");
     });
 
     it("should detect /graphify slash form", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/graphify build" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:graphify");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:graphify");
     });
 
     it("should detect /graphwiki slash form", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/graphwiki query what is X?" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:graphwiki");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:graphwiki");
     });
 
     it("should detect /graph-provider slash form (literal match)", () => {
       // /graph-provider uses a literal startsWith match (the regex stops at the hyphen)
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/graph-provider set graphwiki" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:graph-provider");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:graph-provider");
     });
 
     it("should detect /spending slash form", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/spending reset" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toContain("/oh-my-copilot:spending");
+      expect(result.modifiedPrompt).toContain("/oh-my-githubcopilot:spending");
     });
   });
 });

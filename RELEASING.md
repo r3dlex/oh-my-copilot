@@ -1,6 +1,6 @@
 # Releasing OMP
 
-This document describes the end-to-end release process for `oh-my-copilot`.
+This document describes the end-to-end release process for `oh-my-githubcopilot`.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ Every push to `main` automatically publishes an alpha release:
 - **Version scheme**: `X.Y.Z-alpha.<git-short-sha>` (e.g., `1.2.3-alpha.a1b2c3d4`)
 - **Dist tag**: `alpha`
 - **Manual steps required**: None — fully automated
-- **Install latest alpha**: `npm install oh-my-copilot@alpha`
+- **Install latest alpha**: `npm install oh-my-githubcopilot@alpha`
 - **CHANGELOG.md requirement**: NOT required for alpha releases
 
 Alpha releases allow users to test new features and fixes immediately without waiting for a stable release.
@@ -26,30 +26,30 @@ The publish job writes to **two registries** on every release:
 
 | Registry | Package Name | Auth | Condition |
 |----------|-------------|------|-----------|
-| GitHub Packages | `@r3dlex/oh-my-copilot` | `GITHUB_TOKEN` (built-in) | Always |
-| npmjs.com | `oh-my-copilot` | `NPM_TOKEN` secret | When `NPM_TOKEN` is set |
+| GitHub Packages | `@r3dlex/oh-my-githubcopilot` | `GITHUB_TOKEN` (built-in) | Always |
+| npmjs.com | `oh-my-githubcopilot` | `NPM_TOKEN` secret | When `NPM_TOKEN` is set |
 
 GitHub Packages always publishes (no extra secret required). npmjs.com publishes only when the `NPM_TOKEN` secret is configured — if absent, the step logs a notice and the job succeeds.
 
 **Install from GitHub Packages:**
 ```bash
 # Requires: ~/.npmrc with //npm.pkg.github.com/:_authToken=<PAT>
-npm install @r3dlex/oh-my-copilot@alpha    # latest alpha
-npm install @r3dlex/oh-my-copilot          # stable
+npm install @r3dlex/oh-my-githubcopilot@alpha    # latest alpha
+npm install @r3dlex/oh-my-githubcopilot          # stable
 ```
 
 **Install from npmjs.com (public, no auth):**
 ```bash
-npm install oh-my-copilot@alpha    # latest alpha
-npm install oh-my-copilot          # stable
+npm install oh-my-githubcopilot@alpha    # latest alpha
+npm install oh-my-githubcopilot          # stable
 ```
 
 ## npm Dist Tags
 
 | Dist Tag | Version Scheme | When Published | Install Command |
 |----------|---|---|---|
-| `latest` | `X.Y.Z` (stable) | On tagged commits (`vX.Y.Z`) | `npm install oh-my-copilot` |
-| `alpha` | `X.Y.Z-alpha.<sha>` | On every push to `main` | `npm install oh-my-copilot@alpha` |
+| `latest` | `X.Y.Z` (stable) | On tagged commits (`vX.Y.Z`) | `npm install oh-my-githubcopilot` |
+| `alpha` | `X.Y.Z-alpha.<sha>` | On every push to `main` | `npm install oh-my-githubcopilot@alpha` |
 
 ## Stable Release Process
 
@@ -85,12 +85,12 @@ This syncs the version from `.github/plugin/plugin.json` to `.claude-plugin/plug
 
 ### Step 3: Write CHANGELOG.md
 
-Add a section for the new version describing changes. The section heading **must** contain the version number (e.g., `# oh-my-copilot v1.2.0`).
+Add a section for the new version describing changes. The section heading **must** contain the version number (e.g., `# oh-my-githubcopilot v1.2.0`).
 
 Example:
 
 ```markdown
-# oh-my-copilot v1.2.0
+# oh-my-githubcopilot v1.2.0
 
 ## Features
 - New feature A
@@ -130,12 +130,12 @@ The `Release` GitHub Actions workflow runs automatically and executes 4 jobs in 
 - **publish** — Verifies versions match, packs the tarball, and publishes to npm on the `latest` dist-tag
 - **github-release** — Creates a GitHub Release with auto-generated notes and attaches the `.tgz`
 
-Monitor at: `https://github.com/r3dlex/oh-my-copilot/actions`
+Monitor at: `https://github.com/r3dlex/oh-my-githubcopilot/actions`
 
 ## CHANGELOG.md Requirement
 
 - **Alpha releases**: CHANGELOG.md is NOT required
-- **Stable releases**: CHANGELOG.md MUST have a section heading containing the version (e.g., `# oh-my-copilot v1.2.0`)
+- **Stable releases**: CHANGELOG.md MUST have a section heading containing the version (e.g., `# oh-my-githubcopilot v1.2.0`)
 
 The test job in CI explicitly checks for this. If the version heading is missing, the pipeline will fail with a clear error message before publishing.
 
@@ -158,7 +158,7 @@ The publish job requires an npm access token stored as a GitHub Actions secret:
 1. Generate a granular npm access token:
    - Log in to [npmjs.com](https://www.npmjs.com)
    - Go to **Access Tokens → Generate New Token → Granular Access Token**
-   - Scope: **Read and write** for the `oh-my-copilot` package
+   - Scope: **Read and write** for the `oh-my-githubcopilot` package
    - Set an expiry (recommend 1 year)
 
 2. Add the token to GitHub:
@@ -181,14 +181,14 @@ When the token expires or is compromised:
 
 If a bad release reaches npm:
 
-- **Within 72 hours**: `npm unpublish oh-my-copilot@X.Y.Z`
-- **After 72 hours**: `npm deprecate oh-my-copilot@X.Y.Z "This version has a known issue. Please use X.Y.Z+1."`
+- **Within 72 hours**: `npm unpublish oh-my-githubcopilot@X.Y.Z`
+- **After 72 hours**: `npm deprecate oh-my-githubcopilot@X.Y.Z "This version has a known issue. Please use X.Y.Z+1."`
 
 Always publish a fixed version immediately after deprecating a bad one.
 
 ## Native Addon Note
 
-`oh-my-copilot` depends on `better-sqlite3`, a native C++ addon. Users installing the package (`npm install oh-my-copilot` or `npm install -g oh-my-copilot`) will need:
+`oh-my-githubcopilot` depends on `better-sqlite3`, a native C++ addon. Users installing the package (`npm install oh-my-githubcopilot` or `npm install -g oh-my-githubcopilot`) will need:
 
 - A C++ compiler (GCC, Clang, or MSVC)
 - Python 3

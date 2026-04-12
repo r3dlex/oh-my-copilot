@@ -12,7 +12,7 @@ Clients connect to the OMP MCP server via the standard MCP configuration file:
 {
   "schemaVersion": "1.0",
   "mcpServers": {
-    "oh-my-copilot": {
+    "oh-my-githubcopilot": {
       "type": "stdio",
       "command": "node",
       "args": ["./dist/mcp/server.js"],

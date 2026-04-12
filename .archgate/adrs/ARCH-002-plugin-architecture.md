@@ -10,7 +10,7 @@ status: provisional
 
 ## Context
 
-oh-my-copilot is a GitHub Copilot CLI plugin with three extension points: agents, hooks, and skills.
+oh-my-githubcopilot is a GitHub Copilot CLI plugin with three extension points: agents, hooks, and skills.
 
 ## Decision
 

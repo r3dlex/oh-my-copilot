@@ -15,7 +15,7 @@ async function main() {
       await printHud();
       break;
     case "version":
-      console.log("oh-my-copilot v1.0.0");
+      console.log("oh-my-githubcopilot v1.0.0");
       break;
     case "psm":
       await runPsm(positionals.slice(1));
@@ -43,14 +43,14 @@ async function printHud() {
 }
 async function runPsm(_args) {
   console.log("PSM commands:");
-  console.log("  /oh-my-copilot:psm create <name>   Create isolated worktree session");
-  console.log("  /oh-my-copilot:psm list           List active sessions");
-  console.log("  /oh-my-copilot:psm switch <name>  Switch to session");
-  console.log("  /oh-my-copilot:psm destroy <name> Destroy session");
+  console.log("  /oh-my-githubcopilot:psm create <name>   Create isolated worktree session");
+  console.log("  /oh-my-githubcopilot:psm list           List active sessions");
+  console.log("  /oh-my-githubcopilot:psm switch <name>  Switch to session");
+  console.log("  /oh-my-githubcopilot:psm destroy <name> Destroy session");
 }
 async function runBench(_args) {
   console.log("SWE-bench requires Node.js subprocess with Python evaluation harness.");
-  console.log("Usage: /oh-my-copilot:swe-bench --suite lite --compare baseline");
+  console.log("Usage: /oh-my-githubcopilot:swe-bench --suite lite --compare baseline");
 }
 main().catch((err) => {
   console.error(err);

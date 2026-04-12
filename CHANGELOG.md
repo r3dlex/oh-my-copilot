@@ -1,7 +1,21 @@
 # Changelog
 
-All notable changes to **oh-my-copilot** are documented here, ordered newest first.
+All notable changes to **oh-my-githubcopilot** are documented here, ordered newest first.
 Each section corresponds to commits between conceptual version boundaries (no git tags exist yet — the CI pipeline introduced in v1.2.x will tag future releases automatically).
+
+---
+
+## [v1.4.0] — Package renamed to oh-my-githubcopilot
+
+### Breaking Changes
+- **Package renamed** — npm package renamed from `oh-my-copilot` to `oh-my-githubcopilot`; GitHub Packages now publishes as `@r3dlex/oh-my-githubcopilot`; install with `npm install oh-my-githubcopilot`
+- **Repository moved** — git remote updated to `git@github.com:r3dlex/oh-my-githubcopilot.git`
+
+### Changes
+- All source files, tests, specs, docs, and manifests updated to reflect the new package name
+- MCP server identity updated to `oh-my-githubcopilot`
+- All 11 localized READMEs, archgate ADRs, and release docs updated
+- `bin/omp.mjs` rebuilt with updated package identity
 
 ---
 
@@ -11,7 +25,7 @@ Commits: `fd366e6`…`a26f673`
 
 ### Features
 - **Continuous alpha releases** — every push to `main` publishes `X.Y.Z-alpha.<sha>` to the `alpha` dist-tag; tagged commits (`vX.Y.Z`) publish stable to `latest` (`ec8fffa`)
-- **Hybrid dual-registry publish** — publishes to GitHub Packages (`@r3dlex/oh-my-copilot`) always via `GITHUB_TOKEN`; publishes to npmjs.com (`oh-my-copilot`) when `NPM_TOKEN` secret is configured; graceful skip with notice if absent (`ee42604`)
+- **Hybrid dual-registry publish** — publishes to GitHub Packages (`@r3dlex/oh-my-githubcopilot`) always via `GITHUB_TOKEN`; publishes to npmjs.com (`oh-my-githubcopilot`) when `NPM_TOKEN` secret is configured; graceful skip with notice if absent (`ee42604`)
 - **npm release CI pipeline** — `release.yml` with four jobs: `build` (version resolution + artifact), `test` (CHANGELOG gate for stable only), `publish` (dual-registry), `github-release` (stable only, attaches `.tgz`) (`5a3ae67`)
 
 ### Fixes
@@ -66,7 +80,7 @@ Commits: `ce6f3bd`…`051ac20` (PR #9)
 
 Commits: `804fc37`…`0f96d48` (initial implementation + `6ee243f` rename)
 
-Initial release of **oh-my-copilot (OMP)** — a multi-agent orchestration plugin for GitHub Copilot CLI.
+Initial release of **oh-my-githubcopilot (OMP)** — a multi-agent orchestration plugin for GitHub Copilot CLI.
 
 ### Features
 - **23 specialized agents** via Claude Code subagents: orchestrator, explorer, planner, executor, verifier, writer, reviewer, designer, researcher, tester, debugger, architect, security-reviewer, simplifier, test-engineer, critic, tracer, scientist, code-reviewer, document-specialist, qa-tester, git-master, analyst
@@ -79,7 +93,7 @@ Initial release of **oh-my-copilot (OMP)** — a multi-agent orchestration plugi
 - **Double-tiered MCP config** — user-level (`~/.omp/`) and workspace-level (`.omp/`) config with merge resolution
 - **Setup wizard** — `/setup` and `/mcp-setup` skills for frictionless onboarding
 - **ADR governance** — `archgate` CLI integration for architecture decision records (`d38b46d`, `9cc3d09`)
-- **OMP rename** — project renamed from `oh-my-claudecode (OMC)` to `oh-my-copilot (OMP)` targeting GitHub Copilot CLI (`6ee243f`)
+- **OMP rename** — project renamed from `oh-my-claudecode (OMC)` to `oh-my-githubcopilot (OMP)` targeting GitHub Copilot CLI (`6ee243f`)
 
 ### Documentation
 - `AGENTS.md` — agent registry and delegation rules
