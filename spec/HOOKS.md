@@ -37,17 +37,17 @@ At runtime, the Copilot CLI invokes hooks in priority order at each trigger poin
 **Trigger**: `UserPromptSubmitted`
 **Priority**: 100 (runs first)
 
-Scans the incoming message for magic keywords. On match, activates the corresponding skill and sets `activeMode` in the session state.
+Scans the incoming message for supported command aliases. On match, it rewrites to the canonical slash surface (for example `/omp:autopilot`, with `/setup` supported as the native setup shortcut), activates the corresponding skill, and sets `activeMode` in the session state.
 
 ```typescript
 interface KeywordMatch {
-  keyword: string;        // e.g. "autopilot:", "ralph:", "ulw:"
+  keyword: string;        // e.g. "/omp:autopilot", "/omp:ralph", "/omp:ultrawork"
   skillId: string;        // e.g. "autopilot", "ralph", "ultrawork"
   position: number;       // character offset in message
 }
 ```
 
-Detection is case-sensitive for `:`-suffixed forms (e.g. `autopilot:`), case-insensitive for slash forms (e.g. `/AUTOPILOT`).
+Legacy keyword aliases remain case-sensitive for `:`-suffixed forms (e.g. `autopilot:`), while slash forms remain case-insensitive (e.g. `/AUTOPILOT` or `/OMP:AUTOPILOT`).
 
 ### 4.2 delegation-enforcer
 
