@@ -5,8 +5,8 @@
 #   ./scripts/omp-adopt.sh [--target <path>] [--mode template|submodule|subtree]
 #
 # Modes:
-#   template   (default) Copy .github/ files into target project
-#   submodule  Add as git submodule at .omp/ and symlink .github/ files
+#   template   (default) Copy .copilot/ docs plus required hook/plugin files
+#   submodule  Add as git submodule at .omp/ and symlink .copilot/ docs
 #   subtree    Add as git subtree
 
 set -euo pipefail
@@ -37,13 +37,12 @@ echo ""
 
 case "$MODE" in
   template)
-    echo "Copying .github/ workspace files..."
+    echo "Copying Copilot docs into .copilot/ plus required hook/plugin entrypoints..."
     mkdir -p "$TARGET_DIR/.github"
-    cp -r "$OMP_DIR/.github/agents"    "$TARGET_DIR/.github/agents"
-    cp -r "$OMP_DIR/.github/skills"    "$TARGET_DIR/.github/skills"
+    mkdir -p "$TARGET_DIR/.copilot"
     cp -r "$OMP_DIR/.github/hooks"     "$TARGET_DIR/.github/hooks"
-    cp    "$OMP_DIR/.github/copilot-instructions.md" "$TARGET_DIR/.github/copilot-instructions.md"
-    echo "Done. OMP workspace files copied to $TARGET_DIR/.github/"
+    cp -r "$OMP_DIR/.copilot/."        "$TARGET_DIR/.copilot/"
+    echo "Done. Copilot docs copied to $TARGET_DIR/.copilot/ and required hook/plugin entrypoints kept in $TARGET_DIR/.github/."
     echo ""
     echo "Optional: install MCP companion"
     echo "  npm install oh-my-githubcopilot"
@@ -55,11 +54,14 @@ case "$MODE" in
     cd "$TARGET_DIR"
     git submodule add https://github.com/r3dlex/oh-my-githubcopilot.git .omp
     mkdir -p .github
-    ln -sfn ../.omp/.github/agents    .github/agents
-    ln -sfn ../.omp/.github/skills    .github/skills
+    mkdir -p .copilot
     ln -sfn ../.omp/.github/hooks     .github/hooks
-    ln -sfn ../.omp/.github/copilot-instructions.md .github/copilot-instructions.md
-    echo "Done. OMP added as submodule. Run 'git submodule update --init' to initialize."
+    ln -sfn ../.omp/.copilot/README.md .copilot/README.md
+    ln -sfn ../.omp/.copilot/copilot-instructions.md .copilot/copilot-instructions.md
+    ln -sfn ../.omp/.copilot/copilot-reference.md .copilot/copilot-reference.md
+    ln -sfn ../.omp/.copilot/agents .copilot/agents
+    ln -sfn ../.omp/.copilot/skills .copilot/skills
+    echo "Done. OMP added as submodule with Copilot docs under .copilot/ and required hooks under .github/."
     ;;
 
   subtree)
@@ -67,11 +69,10 @@ case "$MODE" in
     cd "$TARGET_DIR"
     git subtree add --prefix=.omp https://github.com/r3dlex/oh-my-githubcopilot.git main --squash
     mkdir -p .github
-    cp -r .omp/.github/agents    .github/agents
-    cp -r .omp/.github/skills    .github/skills
+    mkdir -p .copilot
     cp -r .omp/.github/hooks     .github/hooks
-    cp    .omp/.github/copilot-instructions.md .github/copilot-instructions.md
-    echo "Done. OMP added as subtree."
+    cp -r .omp/.copilot/. .copilot/
+    echo "Done. OMP added as subtree with Copilot docs under .copilot/ and required hooks under .github/."
     ;;
 
   *)

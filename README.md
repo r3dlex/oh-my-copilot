@@ -28,7 +28,7 @@ Every software team juggles implementation, architecture, security review, testi
 | **HUD display** | Real-time session context and progress tracking |
 | **PSM** | Plugin State Manager with SQLite persistence across sessions |
 | **SWE-bench** | Benchmark harness for reproducible evaluation |
-| **`.github/` convention** | Agents, skills, and hooks auto-discovered by VS Code Copilot — no config required |
+| **Copilot repo layout** | Copilot-facing docs live under `.copilot/`; `.github/` is reserved for workflows, plugin metadata, and hook entrypoints |
 
 <p align="center">
   <img src="assets/buddy-swarm.png" alt="OMP swarm mode" width="600"/>
@@ -123,7 +123,7 @@ git clone https://github.com/r3dlex/oh-my-githubcopilot.git /tmp/omp
 │  ... (23 total)  │                  │  ─────────────         │
 │                  │                  │  tmux status bar       │
 ├──────────────────┴──────────────────┴────────────────────────┤
-│  .github/agents/  +  .github/skills/  +  .github/hooks/     │
+│  .copilot/* refs + local Copilot-facing agent/skill docs    │
 │  ~/.omp/ (user config)  +  .omp/ (workspace config)         │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -175,9 +175,16 @@ OMP provides 23 specialized agents, each with Copilot-compatible frontmatter for
 ├── src/             # TypeScript implementation
 ├── dist/            # built runtime artifacts committed for plugin consumers
 ├── .github/
-│   ├── agents/      # workspace-discovered agent copies
-│   ├── skills/      # workspace-discovered skill copies
-│   └── copilot-instructions.md
+│   ├── hooks/       # GitHub/Copilot hook entrypoints
+│   ├── plugin/      # plugin metadata
+│   └── workflows/   # CI / release automation
+├── .copilot/
+│   ├── README.md                 # Copilot doc boundary
+│   ├── copilot-instructions.md   # Copilot-facing shared instructions
+│   ├── copilot-reference.md      # richer Copilot-specific reference
+│   ├── agents/                   # Copilot-facing agent docs
+│   ├── skills/                   # Copilot-facing skill docs
+│   └── plugin/skills/            # Copilot plugin-bundled skill docs
 └── spec/            # architecture and subsystem docs
 ```
 

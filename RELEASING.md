@@ -2,6 +2,8 @@
 
 This document describes the end-to-end release process for `oh-my-githubcopilot`.
 
+Copilot-facing documentation now lives under `.copilot/`. The `.github/` directory is reserved for workflows, plugin metadata, and hook entrypoints.
+
 ## Prerequisites
 
 - Write access to the GitHub repository

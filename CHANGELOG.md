@@ -4,6 +4,16 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
+## [v1.5.5] — Copilot docs move and release refresh
+
+### Documentation
+- **Copilot docs moved to `.copilot/`** — relocated Copilot-facing instructions, agent docs, skill docs, and plugin skill docs out of `.github/` so `.copilot/` is now the single home for Copilot-specific documentation.
+- **Adoption flow updated** — `scripts/omp-adopt.sh` now installs Copilot docs under `.copilot/` while leaving `.github/` focused on workflows, plugin metadata, and hook entrypoints.
+
+### Release readiness
+- **Next release metadata advanced** — package, plugin, marketplace, and Claude plugin manifests move to `1.5.5` so the post-STATUS_LINE and post-doc-relocation state is ready for the next release cut.
+- **Release notes refreshed** — changelog and release docs now reflect the `.copilot/` doc boundary and the new release target.
+
 ## [v1.5.4] — Experimental Copilot setup and STATUS_LINE integration
 
 ### Features
@@ -37,7 +47,7 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ### Features
 - **Copilot-ready agent metadata** — normalized `src/agents/*.md` frontmatter for Copilot-compatible agent loading fields while preserving the existing prompt bodies.
-- **`.github/copilot-instructions.md` refresh** — rewrote the base Copilot instructions with an OMP overview, delegation guidance, agent catalog, skill catalog, HUD reference, and keyword quick reference.
+- **Copilot instructions refresh** — rewrote the Copilot instructions with an OMP overview, delegation guidance, agent catalog, skill catalog, HUD reference, and keyword quick reference, now carried under the Copilot-facing docs set instead of `.github/` docs.
 - **README quick start refresh** — replaced the install flow with `copilot plugin install ...`, `/omp:setup`, and first-run Copilot commands.
 
 ### Fixes
