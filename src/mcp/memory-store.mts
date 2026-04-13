@@ -1,24 +1,48 @@
 /**
  * MCP Memory Store
  * Key-value memory with categories and TTL.
+ * Uses SQLite when available; falls back to JSON file storage.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const BetterSqlite3 = require("better-sqlite3") as typeof import("better-sqlite3");
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { homedir } from "os";
-import { join } from "path";
+import { dirname, join } from "path";
+import { SqliteConstructor as sqlite } from "./db-loader.mts";
 
-type SqliteDatabase = InstanceType<typeof BetterSqlite3>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _db: any | null = null;
 
-let _db: SqliteDatabase | null = null;
+function ensureDir(filePath: string): void {
+  const dir = dirname(filePath);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+}
 
-function getDb(): SqliteDatabase {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getDb(): any | null {
+  if (!sqlite) return null;
   if (!_db) {
     const dbPath = join(homedir(), ".omp", "state", "omp.db");
-    _db = new BetterSqlite3(dbPath);
+    ensureDir(dbPath);
+    _db = new sqlite(dbPath);
     _db.pragma("journal_mode = WAL");
   }
   return _db;
+}
+
+const jsonPath = join(homedir(), ".omp", "state", "memory.json");
+
+function readJsonMemory(): Record<string, MemoryEntry> {
+  try {
+    if (!existsSync(jsonPath)) return {};
+    return JSON.parse(readFileSync(jsonPath, "utf-8")) as Record<string, MemoryEntry>;
+  } catch {
+    return {};
+  }
+}
+
+function writeJsonMemory(mem: Record<string, MemoryEntry>): void {
+  ensureDir(jsonPath);
+  writeFileSync(jsonPath, JSON.stringify(mem, null, 2), "utf-8");
 }
 
 export interface MemoryEntry {
@@ -35,8 +59,11 @@ export interface MemoryEntry {
  */
 export function get(key: string): string | null {
   const db = getDb();
-  const row = db.prepare("SELECT value FROM memory WHERE key = ?").get(key) as { value: string } | undefined;
-  return row?.value ?? null;
+  if (db) {
+    const row = db.prepare("SELECT value FROM memory WHERE key = ?").get(key) as { value: string } | undefined;
+    return row?.value ?? null;
+  }
+  return readJsonMemory()[key]?.value ?? null;
 }
 
 /**
@@ -50,15 +77,31 @@ export function set(
 ): void {
   const db = getDb();
   const now = Date.now();
-  db.prepare(`
-    INSERT INTO memory (key, value, category, session_id, created_at, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-    ON CONFLICT(key) DO UPDATE SET
-      value = excluded.value,
-      category = COALESCE(excluded.category, category),
-      session_id = COALESCE(excluded.session_id, session_id),
-      updated_at = excluded.updated_at
-  `).run(key, value, category ?? null, sessionId ?? null, now, now);
+
+  if (db) {
+    db.prepare(`
+      INSERT INTO memory (key, value, category, session_id, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(key) DO UPDATE SET
+        value = excluded.value,
+        category = COALESCE(excluded.category, category),
+        session_id = COALESCE(excluded.session_id, session_id),
+        updated_at = excluded.updated_at
+    `).run(key, value, category ?? null, sessionId ?? null, now, now);
+    return;
+  }
+
+  const mem = readJsonMemory();
+  const existing = mem[key];
+  mem[key] = {
+    key,
+    value,
+    category: category ?? existing?.category ?? null,
+    session_id: sessionId ?? existing?.session_id ?? null,
+    created_at: existing?.created_at ?? now,
+    updated_at: now,
+  };
+  writeJsonMemory(mem);
 }
 
 /**
@@ -66,7 +109,13 @@ export function set(
  */
 export function del(key: string): void {
   const db = getDb();
-  db.prepare("DELETE FROM memory WHERE key = ?").run(key);
+  if (db) {
+    db.prepare("DELETE FROM memory WHERE key = ?").run(key);
+    return;
+  }
+  const mem = readJsonMemory();
+  delete mem[key];
+  writeJsonMemory(mem);
 }
 
 /**
@@ -74,7 +123,12 @@ export function del(key: string): void {
  */
 export function listByCategory(category: string): MemoryEntry[] {
   const db = getDb();
-  return db.prepare("SELECT * FROM memory WHERE category = ? ORDER BY updated_at DESC").all(category) as MemoryEntry[];
+  if (db) {
+    return db.prepare("SELECT * FROM memory WHERE category = ? ORDER BY updated_at DESC").all(category) as MemoryEntry[];
+  }
+  return Object.values(readJsonMemory())
+    .filter((e) => e.category === category)
+    .sort((a, b) => b.updated_at - a.updated_at);
 }
 
 /**
@@ -82,7 +136,12 @@ export function listByCategory(category: string): MemoryEntry[] {
  */
 export function listBySession(sessionId: string): MemoryEntry[] {
   const db = getDb();
-  return db.prepare("SELECT * FROM memory WHERE session_id = ? ORDER BY updated_at DESC").all(sessionId) as MemoryEntry[];
+  if (db) {
+    return db.prepare("SELECT * FROM memory WHERE session_id = ? ORDER BY updated_at DESC").all(sessionId) as MemoryEntry[];
+  }
+  return Object.values(readJsonMemory())
+    .filter((e) => e.session_id === sessionId)
+    .sort((a, b) => b.updated_at - a.updated_at);
 }
 
 /**
@@ -90,7 +149,10 @@ export function listBySession(sessionId: string): MemoryEntry[] {
  */
 export function listAll(): MemoryEntry[] {
   const db = getDb();
-  return db.prepare("SELECT * FROM memory ORDER BY updated_at DESC").all() as MemoryEntry[];
+  if (db) {
+    return db.prepare("SELECT * FROM memory ORDER BY updated_at DESC").all() as MemoryEntry[];
+  }
+  return Object.values(readJsonMemory()).sort((a, b) => b.updated_at - a.updated_at);
 }
 
 /**
@@ -98,7 +160,11 @@ export function listAll(): MemoryEntry[] {
  */
 export function clearAll(): void {
   const db = getDb();
-  db.prepare("DELETE FROM memory").run();
+  if (db) {
+    db.prepare("DELETE FROM memory").run();
+    return;
+  }
+  writeJsonMemory({});
 }
 
 /**

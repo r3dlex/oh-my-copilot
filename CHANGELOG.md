@@ -4,6 +4,14 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
+## [v1.5.2] — Copilot CLI hooks schema + MCP SQLite fallback
+
+### Fixes
+- **`hooks.json` schema rewrite** — Copilot CLI v1.0.25 validates hooks against a Zod schema expecting `{ version: 1, hooks: { EventName: [{ type, bash, timeoutSec }] } }`; old format used `{ schemaVersion: "1.0", hooks: [array] }` causing "Expected object, received array" validation failure. Rewrote hooks.json to the correct object-keyed-by-event format with `type: "command"`, `bash: "node ./dist/hooks/<name>.mjs"`, `timeoutSec` fields.
+- **MCP server `better-sqlite3` fallback** — `better-sqlite3` is a native Node.js addon that cannot be bundled by esbuild; git-clone plugin installs have no `node_modules`, causing `ERR_MODULE_NOT_FOUND` at MCP server startup. Both `state-manager.mts` and `memory-store.mts` now wrap the `require('better-sqlite3')` in try/catch and fall back to JSON file storage (`~/.omp/state/sessions.json`, `~/.omp/state/memory.json`) when SQLite is unavailable.
+
+---
+
 ## [v1.5.1] — Copilot CLI plugin loading fixes
 
 ### Fixes

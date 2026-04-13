@@ -7,14 +7,15 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// --- Mock better-sqlite3 ---
+// --- Mock db-loader (wraps better-sqlite3 with createRequire fallback) ---
 const mockRun = vi.fn();
 const mockAll = vi.fn(() => []);
 const mockPrepare = vi.fn(() => ({ run: mockRun, all: mockAll }));
 const mockExec = vi.fn();
-const mockDbInstance = { prepare: mockPrepare, exec: mockExec };
-vi.mock("better-sqlite3", () => ({
-  default: vi.fn(() => mockDbInstance),
+const mockPragma = vi.fn();
+const mockDbInstance = { prepare: mockPrepare, exec: mockExec, pragma: mockPragma };
+vi.mock("../../src/mcp/db-loader.mts", () => ({
+  SqliteConstructor: vi.fn(() => mockDbInstance),
 }));
 
 // --- Mock fs ---

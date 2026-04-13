@@ -9,11 +9,11 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import Database from "better-sqlite3";
 import { readFileSync, mkdirSync } from "fs";
 import { homedir } from "os";
 import { join, dirname } from "path";
 import { randomUUID } from "crypto";
+import { SqliteConstructor } from "./db-loader.mts";
 
 // --- Database Setup ---
 function getDbPath(): string {
@@ -26,47 +26,52 @@ function ensureDbDir(dbPath: string): void {
   mkdirSync(dirname(dbPath), { recursive: true });
 }
 
-const dbPath = getDbPath();
-ensureDbDir(dbPath);
-const db = new Database(dbPath);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let db: any | null = null;
+if (SqliteConstructor) {
+  const dbPath = getDbPath();
+  ensureDbDir(dbPath);
+  db = new SqliteConstructor(dbPath);
+  db.pragma("journal_mode = WAL");
 
-// Run migrations
-db.exec(`
-  CREATE TABLE IF NOT EXISTS sessions (
-    id TEXT PRIMARY KEY,
-    worktree_id TEXT,
-    state_json TEXT NOT NULL,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
-  );
-  CREATE INDEX IF NOT EXISTS idx_sessions_worktree ON sessions(worktree_id);
-  CREATE INDEX IF NOT EXISTS idx_sessions_updated ON sessions(updated_at);
+  // Run migrations
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS sessions (
+      id TEXT PRIMARY KEY,
+      worktree_id TEXT,
+      state_json TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_sessions_worktree ON sessions(worktree_id);
+    CREATE INDEX IF NOT EXISTS idx_sessions_updated ON sessions(updated_at);
 
-  CREATE TABLE IF NOT EXISTS memory (
-    key TEXT PRIMARY KEY,
-    value TEXT NOT NULL,
-    category TEXT,
-    session_id TEXT,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
-  );
-  CREATE INDEX IF NOT EXISTS idx_memory_category ON memory(category);
-  CREATE INDEX IF NOT EXISTS idx_memory_session ON memory(session_id);
+    CREATE TABLE IF NOT EXISTS memory (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      category TEXT,
+      session_id TEXT,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_memory_category ON memory(category);
+    CREATE INDEX IF NOT EXISTS idx_memory_session ON memory(session_id);
 
-  CREATE TABLE IF NOT EXISTS trace (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id TEXT NOT NULL,
-    hook_id TEXT,
-    agent_id TEXT,
-    event_type TEXT NOT NULL,
-    payload TEXT,
-    duration_ms INTEGER,
-    timestamp INTEGER NOT NULL
-  );
-  CREATE INDEX IF NOT EXISTS idx_trace_session ON trace(session_id);
-  CREATE INDEX IF NOT EXISTS idx_trace_hook ON trace(hook_id);
-  CREATE INDEX IF NOT EXISTS idx_trace_agent ON trace(agent_id);
-`);
+    CREATE TABLE IF NOT EXISTS trace (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id TEXT NOT NULL,
+      hook_id TEXT,
+      agent_id TEXT,
+      event_type TEXT NOT NULL,
+      payload TEXT,
+      duration_ms INTEGER,
+      timestamp INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_trace_session ON trace(session_id);
+    CREATE INDEX IF NOT EXISTS idx_trace_hook ON trace(hook_id);
+    CREATE INDEX IF NOT EXISTS idx_trace_agent ON trace(agent_id);
+  `);
+}
 
 // --- Tool Definitions ---
 const TOOLS = [
@@ -179,12 +184,14 @@ function handleListTools() {
 async function handleCallTool(name: string, args: Record<string, unknown>) {
   switch (name) {
     case "omp_get_session_state": {
+      if (!db) return { content: [{ type: "text", text: "null" }] };
       const sessions = db.prepare("SELECT * FROM sessions ORDER BY updated_at DESC LIMIT 1").all();
       return { content: [{ type: "text", text: JSON.stringify(sessions[0] || null, null, 2) }] };
     }
     case "omp_save_session": {
       const sessionId = (args.sessionId as string) || randomUUID();
       const stateJson = (args.stateJson as string) || JSON.stringify({});
+      if (!db) return { content: [{ type: "text", text: JSON.stringify({ status: "ok", sessionId, note: "SQLite unavailable; state not persisted" }) }] };
       const now = Date.now();
       db.prepare(
         "INSERT OR REPLACE INTO sessions (id, worktree_id, state_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
@@ -192,6 +199,7 @@ async function handleCallTool(name: string, args: Record<string, unknown>) {
       return { content: [{ type: "text", text: JSON.stringify({ status: "ok", sessionId }) }] };
     }
     case "omp_list_sessions": {
+      if (!db) return { content: [{ type: "text", text: "[]" }] };
       const sessions = db.prepare("SELECT id, created_at, updated_at FROM sessions ORDER BY updated_at DESC").all();
       return { content: [{ type: "text", text: JSON.stringify(sessions, null, 2) }] };
     }
