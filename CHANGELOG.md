@@ -4,6 +4,20 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
+## [v1.5.3] — Release readiness and CI enforcement
+
+### Fixes
+- **Version bump for the next publishable release** — advanced package, plugin, marketplace, and Claude plugin manifests to `1.5.3`, which clears the existing `v1.5.1` / `v1.5.2` tag history and avoids the next release colliding with already-used versions.
+- **Real CI test failures** — removed the `|| true` bypasses from the main CI test and coverage jobs so GitHub Actions now fails when tests or coverage regress.
+- **Claude plugin manifest sync** — normalized `.claude-plugin/plugin.json` to a single version field by re-syncing it from the root `plugin.json`.
+
+### Verification
+- **Fresh coverage evidence** — `npm run test:coverage` now reports `88.26%` statements, `83.96%` branches, and `92.4%` functions, satisfying the repo's `80%` thresholds.
+- **Fresh local CI parity run** — `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npx archgate check`, and `npm pack --dry-run` all pass on the release candidate branch.
+
+### Documentation
+- **Release process clarified** — `RELEASING.md` now calls out syncing all plugin manifests plus marketplace metadata and choosing the next unreleased semver before tagging.
+
 ## [v1.5.0] — Copilot CLI release alignment
 
 ### Features

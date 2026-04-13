@@ -56,15 +56,17 @@ npm install oh-my-githubcopilot          # stable
 
 To publish a stable release, follow these steps:
 
-### Step 1: Bump Version
+### Step 1: Choose the next unreleased version and bump it
 
 ```bash
-npm version patch   # 1.2.0 → 1.2.1
-npm version minor   # 1.2.0 → 1.3.0
-npm version major   # 1.2.0 → 2.0.0
+npm version patch --no-git-tag-version   # 1.2.0 → 1.2.1
+npm version minor --no-git-tag-version   # 1.2.0 → 1.3.0
+npm version major --no-git-tag-version   # 1.2.0 → 2.0.0
 ```
 
-This updates `package.json`, creates a local git commit, and creates a git tag (`vX.Y.Z`).
+Before choosing `X.Y.Z`, verify it is newer than every existing git tag and previously published package version. For example, if `v1.5.2` already exists in git history, do **not** reuse `1.5.0` or `1.5.2`; bump to the next free version such as `1.5.3`.
+
+This updates `package.json` and `package-lock.json` without creating a tag yet, so you can sync the remaining release manifests first.
 
 ### Step 2: Build and commit runtime artifacts
 
@@ -75,9 +77,13 @@ git add dist/
 
 OMP plugin consumers may install from a git checkout or plugin clone without an automatic rebuild, so the committed `dist/` directory is part of the release artifact.
 
-### Step 3: Sync Plugin Manifest
+### Step 3: Sync plugin manifests and marketplace metadata
 
-`npm version` only updates `package.json`. You must also manually update `.github/plugin/plugin.json`:
+`npm version` only updates `package.json` and `package-lock.json`. You must also manually update:
+
+- `plugin.json`
+- `.github/plugin/plugin.json`
+- `.github/plugin/marketplace.json`
 
 ```json
 {
@@ -91,7 +97,16 @@ Then run the sync script:
 npm run sync-claude-plugin
 ```
 
-This syncs the version from `.github/plugin/plugin.json` to `.claude-plugin/plugin.json`. The CI will fail the publish step if these do not match the git tag.
+This syncs the root `plugin.json` into `.claude-plugin/plugin.json`. Before releasing, confirm all of these files match the same version:
+
+- `package.json`
+- `package-lock.json`
+- `plugin.json`
+- `.github/plugin/plugin.json`
+- `.github/plugin/marketplace.json`
+- `.claude-plugin/plugin.json`
+
+The CI will fail the publish step if the plugin manifests drift from the release version.
 
 ### Step 4: Write CHANGELOG.md
 
@@ -111,17 +126,17 @@ Example:
 - Fixed bug Y
 ```
 
-### Step 5: Amend the Release Commit
+### Step 5: Create the release commit and tag
 
-After writing the CHANGELOG, add both the plugin manifest and changelog to the release commit:
+After writing the CHANGELOG and syncing manifests, create the release commit and tag:
 
 ```bash
-git add .github/plugin/plugin.json CHANGELOG.md
-git commit --amend --no-edit
-git tag -f vX.Y.Z
+git add package.json package-lock.json plugin.json .github/plugin/plugin.json .github/plugin/marketplace.json .claude-plugin/plugin.json CHANGELOG.md RELEASING.md dist/
+git commit -m "Prepare the next publishable OMP release"
+git tag vX.Y.Z
 ```
 
-The `--amend` updates the existing commit created by `npm version`. The `--no-edit` preserves the commit message. The `git tag -f` re-tags after the amend.
+Do not force-move an existing version tag. If `vX.Y.Z` already exists, choose the next unreleased version and repeat the version-sync step instead.
 
 ### Step 6: Push with `--follow-tags`
 

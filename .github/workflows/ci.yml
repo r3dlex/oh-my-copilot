@@ -34,7 +34,7 @@ jobs:
       - name: Extract artifact
         run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
       - run: npm run typecheck
-      - run: timeout 120 npm test < /dev/null || true
+      - run: timeout 120 npm test < /dev/null
       - name: Run archgate check
         run: |
           npx archgate --version
@@ -53,7 +53,7 @@ jobs:
           path: .
       - name: Extract artifact
         run: tar xzf ci-artifact.tar.gz && rm ci-artifact.tar.gz
-      - run: timeout 600 npm test -- --coverage < /dev/null || true
+      - run: timeout 600 npm run test:coverage < /dev/null
 
   pnpm-package:
     runs-on: ubuntu-latest
