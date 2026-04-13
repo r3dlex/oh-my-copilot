@@ -5,6 +5,14 @@ Each section corresponds to commits between conceptual version boundaries (no gi
 
 ---
 
+## [v1.4.1] — CLI shebang fix, dynamic version
+
+### Fixes
+- **CLI shebang** — `bin/omp.mjs` now includes `#!/usr/bin/env node` banner (via esbuild `banner` option); the binary is executable directly without explicit `node` invocation (`550b764`)
+- **Dynamic version** — `omp version` now reads name and version from `package.json` at runtime via `createRequire`; no more hardcoded version string in source (`550b764`)
+
+---
+
 ## [v1.4.0] — Package renamed to oh-my-githubcopilot
 
 ### Breaking Changes
