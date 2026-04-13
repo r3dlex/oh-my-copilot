@@ -4,6 +4,21 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
+## [v1.5.4] — Experimental Copilot setup and STATUS_LINE integration
+
+### Features
+- **Experimental Copilot defaults in setup** — `omp setup` now merges the required Copilot experimental feature flags into `~/.copilot/config.json`, preserves existing flags and custom status-line commands, and writes the packaged OMP status-line command when needed.
+- **Packaged STATUS_LINE support** — added a dedicated `src/hud/statusline.mts` entrypoint plus `bin/omp-statusline.sh` wrapper so Copilot CLI can render OMP session state directly from the installed plugin.
+- **HUD artifact export for status line rendering** — `hud-emitter` now writes the minimal status-line artifacts needed by the STATUS_LINE command in addition to the legacy HUD line output.
+
+### Fixes
+- **Setup verification harness** — added direct temp-HOME setup tests so Copilot config merging is exercised without depending on the limited top-level `omp` CLI subcommand surface.
+- **STATUS_LINE verification harness** — updated HUD/statusline tests so temp-HOME artifact paths are asserted correctly and lint-cleanly under the new status-line flow.
+
+### Verification
+- **Coverage remains above release floor** — fresh coverage evidence remains above the required 80% thresholds: statements `88.26%`, branches `83.98%`, functions `92.4%`.
+- **Focused addendum verification** — setup and status-line focused suites, typecheck, lint, build, and wrapper smoke all pass on the merged leader tree, with the remaining skipped integration setup test called out as pre-existing infrastructure debt rather than an addendum regression.
+
 ## [v1.5.3] — Release readiness and CI enforcement
 
 ### Fixes

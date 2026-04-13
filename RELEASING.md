@@ -64,7 +64,7 @@ npm version minor --no-git-tag-version   # 1.2.0 → 1.3.0
 npm version major --no-git-tag-version   # 1.2.0 → 2.0.0
 ```
 
-Before choosing `X.Y.Z`, verify it is newer than every existing git tag and previously published package version. For example, if `v1.5.2` already exists in git history, do **not** reuse `1.5.0` or `1.5.2`; bump to the next free version such as `1.5.3`.
+Before choosing `X.Y.Z`, verify it is newer than every existing git tag and previously published package version. For example, if `v1.5.3` already exists in git history, do **not** reuse `1.5.0`, `1.5.2`, or `1.5.3`; bump to the next free version such as `1.5.4`.
 
 This updates `package.json` and `package-lock.json` without creating a tag yet, so you can sync the remaining release manifests first.
 
