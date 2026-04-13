@@ -176,10 +176,10 @@ describe("keyword-detector hook", () => {
       expect(result.modifiedPrompt).toContain("/omp:graph-provider");
     });
 
-    it("should detect /mcp-setup slash form without truncating the command", () => {
+    it("should detect /mcp slash surface without truncating the command", () => {
       const result = processHook({ hook_type: "UserPromptSubmitted", prompt: "/mcp-setup --interactive" });
       expect(result.status).toBe("ok");
-      expect(result.modifiedPrompt).toBe("/omp:mcp-setup --interactive");
+      expect(result.modifiedPrompt).toBe("/mcp --interactive");
     });
 
     it("should detect /spending slash form", () => {
