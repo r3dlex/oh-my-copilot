@@ -32,7 +32,7 @@ function renderPlain(state) {
   const model = state.activeModel || "sonnet";
   const reqWarningPlain = state.warningActive ? " !!" : "";
   const reqStrPlain = `req:${state.premiumRequests ?? 0}/${state.premiumRequestsTotal ?? 1500}${reqWarningPlain}`;
-  return `[OMP v${state.version}] ${mode} | ${model} | ctx:${ctx}% | tok:~${tokens}/${state.tokensTotal} | ${reqStrPlain} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 21} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 23} | ${state.status}`;
+  return `[OMP v${state.version}] ${mode} | ${model} | ctx:${ctx}% | tok:~${tokens}/${state.tokensTotal} | ${reqStrPlain} | ${age} | tools:${state.toolsUsed?.size || 0}/${state.toolsTotal ?? 13} | skills:${state.skillsUsed?.size || 0}/${state.skillsTotal ?? 25} | agents:${state.cumulativeAgentsUsed}/${state.agentsTotal ?? 23} | ${state.status}`;
 }
 
 // src/hud/statusline.mts
@@ -98,7 +98,7 @@ function deserializeHudState(raw) {
     toolsUsed,
     skillsUsed,
     toolsTotal: typeof value.toolsTotal === "number" ? value.toolsTotal : 13,
-    skillsTotal: typeof value.skillsTotal === "number" ? value.skillsTotal : 21,
+    skillsTotal: typeof value.skillsTotal === "number" ? value.skillsTotal : 25,
     agentsTotal: typeof value.agentsTotal === "number" ? value.agentsTotal : 23,
     premiumRequests: typeof value.premiumRequests === "number" ? value.premiumRequests : 0,
     premiumRequestsTotal: typeof value.premiumRequestsTotal === "number" ? value.premiumRequestsTotal : DEFAULT_PREMIUM_REQUESTS_TOTAL,
@@ -131,7 +131,7 @@ function buildHudState(snapshot, now = Date.now()) {
     toolsUsed,
     skillsUsed,
     toolsTotal: 13,
-    skillsTotal: 21,
+    skillsTotal: 25,
     agentsTotal: 23,
     premiumRequests: snapshot.premium_requests ?? 0,
     premiumRequestsTotal: snapshot.premium_requests_total ?? DEFAULT_PREMIUM_REQUESTS_TOTAL,
@@ -215,19 +215,41 @@ function buildEmit(state) {
     taskProgress: state.task_progress
   };
 }
+var MODEL_CONTEXTS = {
+  "claude-sonnet-4.5": 2e5,
+  "claude-sonnet-4": 2e5,
+  "claude-sonnet-4.6": 2e5,
+  "claude-opus-4.6": 2e5,
+  "gpt-5": 128e3,
+  "gpt-5.4-mini": 128e3,
+  "gemini-3-pro": 128e3,
+  default: 2e5
+};
+function resolveTokenBudget(model) {
+  return MODEL_CONTEXTS[model] ?? MODEL_CONTEXTS["default"] ?? 2e5;
+}
+function resolvePremiumRequestsTotal() {
+  const env = process.env["OMP_PREMIUM_REQUESTS_TOTAL"];
+  if (env) {
+    const parsed = parseInt(env, 10);
+    if (!isNaN(parsed) && parsed > 0) return parsed;
+  }
+  return 1500;
+}
 function processSessionStart(input) {
   const start = Date.now();
   const log = [];
   const sessionId = input.session_id || "default";
   const now = Date.now();
+  const model = input.model || "claude-sonnet-4.6";
   const state = {
     version: PKG_VERSION,
     session_id: sessionId,
     started_at: now,
     updated_at: now,
-    model: input.model || "claude-sonnet-4.5",
+    model,
     tokens_estimated: 0,
-    token_budget: 2e5,
+    token_budget: resolveTokenBudget(model),
     context_pct: 0,
     tools_used: [],
     skills_used: [],
@@ -237,7 +259,7 @@ function processSessionStart(input) {
     task_progress: 0,
     status: "idle",
     premium_requests: 0,
-    premium_requests_total: 1500,
+    premium_requests_total: resolvePremiumRequestsTotal(),
     warning_active: false
   };
   const statePath = getStatePath(sessionId);
@@ -266,9 +288,9 @@ function processPostToolUse(input) {
       session_id: typeof raw.session_id === "string" ? raw.session_id : input.session_id || "default",
       started_at: typeof raw.started_at === "number" ? raw.started_at : Date.now(),
       updated_at: Date.now(),
-      model: typeof raw.model === "string" ? raw.model : input.model || "claude-sonnet-4.5",
+      model: typeof raw.model === "string" ? raw.model : input.model || "claude-sonnet-4.6",
       tokens_estimated: typeof raw.tokens_estimated === "number" ? raw.tokens_estimated : 0,
-      token_budget: typeof raw.token_budget === "number" ? raw.token_budget : 2e5,
+      token_budget: typeof raw.token_budget === "number" ? raw.token_budget : resolveTokenBudget(typeof raw.model === "string" ? raw.model : input.model || "claude-sonnet-4.6"),
       context_pct: typeof raw.context_pct === "number" ? raw.context_pct : 0,
       tools_used: Array.isArray(raw.tools_used) ? raw.tools_used : [],
       skills_used: Array.isArray(raw.skills_used) ? raw.skills_used : [],
@@ -278,7 +300,7 @@ function processPostToolUse(input) {
       task_progress: typeof raw.task_progress === "number" ? raw.task_progress : 0,
       status: raw.status ?? "running",
       premium_requests: typeof raw.premium_requests === "number" ? raw.premium_requests : 0,
-      premium_requests_total: typeof raw.premium_requests_total === "number" ? raw.premium_requests_total : 1500,
+      premium_requests_total: typeof raw.premium_requests_total === "number" ? raw.premium_requests_total : resolvePremiumRequestsTotal(),
       warning_active: typeof raw.warning_active === "boolean" ? raw.warning_active : false
     };
   } catch {

@@ -111,9 +111,10 @@ function processHook(input) {
     try {
       state = JSON.parse(readFileSync2(statePath, "utf-8"));
     } catch {
+      const fallbackModel = input.model ?? "default";
       state = {
         tokens_estimated: 0,
-        token_budget: 2e5,
+        token_budget: MODEL_CONTEXTS[fallbackModel] ?? MODEL_CONTEXTS["default"] ?? 2e5,
         context_pct: 0,
         warnings_issued: /* @__PURE__ */ new Set()
       };

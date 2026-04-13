@@ -4,6 +4,20 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
+## [v1.5.6] — HUD watch daemon and model/budget fixes
+
+### Features
+- **HUD background watch daemon** — `omp hud --watch` (or `npm run hud:watch`) launches a daemon that polls session state every 2 seconds (configurable via `OMP_HUD_INTERVAL`), shows a real-time elapsed timer, and refreshes all three HUD artifacts on every cycle. SIGINT and SIGTERM are handled gracefully.
+
+### Fixes
+- **HUD model fallback** — corrected default model fallback from `claude-sonnet-4.5` to `claude-sonnet-4.6`.
+- **HUD token budget** — token budget is now resolved per-model from the `MODEL_CONTEXTS` map instead of using a fixed constant.
+- **HUD premium requests total** — total premium request count is now configurable via the `OMP_PREMIUM_REQUESTS_TOTAL` environment variable.
+- **HUD skills total** — `skillsTotal` corrected from 21 to 25, matching the actual number of shipped skills.
+- **Model router advisory** — updated the model-router advisory string to reference `claude-sonnet-4.6`.
+
+---
+
 ## [v1.5.5] — Copilot docs move and release refresh
 
 ### Documentation

@@ -144,7 +144,7 @@ describe("HUD renderer", () => {
       const state = createMockState();
       const output = renderPlain(state);
       expect(output).toContain("tools:0/13");
-      expect(output).toContain("skills:0/21");
+      expect(output).toContain("skills:0/25");
       expect(output).toContain("agents:2/23");
     });
 
