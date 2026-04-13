@@ -42,7 +42,7 @@
     "typecheck": "tsc --noEmit",
     "sync-claude-plugin": "cp .github/plugin/plugin.json .claude-plugin/plugin.json",
     "prepublishOnly": "npm run build && npm run sync-claude-plugin",
-    "postinstall": "npm run build",
+    "postinstall": "[ -d dist ] || npm run build",
     "archgate:init": "npx archgate init --editor claude",
     "archgate:check": "npx archgate check"
   },

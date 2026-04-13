@@ -75,6 +75,8 @@ jobs:
 
       - run: npm run build
 
+      - run: npm run sync-claude-plugin
+
       - name: Tar full repo artifact
         run: tar -czf /tmp/release-artifact.tar.gz --exclude='.git' --exclude='node_modules/.cache' .
 
