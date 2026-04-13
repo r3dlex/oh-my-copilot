@@ -1,3 +1,8 @@
+---
+name: ultrawork
+description: Parallel multi-agent high-throughput implementation
+user-invocable: true
+---
 # Skill: Ultrawork
 
 ## Metadata

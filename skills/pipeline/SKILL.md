@@ -1,3 +1,8 @@
+---
+name: pipeline
+description: Sequential stage-based execution pipeline
+user-invocable: true
+---
 # Skill: Pipeline
 
 ## Metadata

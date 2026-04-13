@@ -1,3 +1,8 @@
+---
+name: release
+description: Guided release workflow and automation
+user-invocable: true
+---
 # Skill: Release
 
 ## Metadata

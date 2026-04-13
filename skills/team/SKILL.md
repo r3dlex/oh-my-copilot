@@ -1,3 +1,8 @@
+---
+name: team
+description: Coordinated N-agent team with staged pipeline
+user-invocable: true
+---
 # Skill: Team
 
 ## Metadata

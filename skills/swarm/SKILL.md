@@ -1,3 +1,8 @@
+---
+name: swarm
+description: Parallel agent swarm for independent subtasks
+user-invocable: true
+---
 # Skill: Swarm
 
 ## Metadata

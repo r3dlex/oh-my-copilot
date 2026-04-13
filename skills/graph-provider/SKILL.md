@@ -1,3 +1,8 @@
+---
+name: graph-provider
+description: Manage and configure the active graph provider
+user-invocable: true
+---
 # Skill: Graph Provider
 
 ## Metadata

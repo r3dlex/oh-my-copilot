@@ -1,3 +1,8 @@
+---
+name: ecomode
+description: Cost-optimized execution with haiku model tier
+user-invocable: true
+---
 # Skill: Ecomode
 
 ## Metadata

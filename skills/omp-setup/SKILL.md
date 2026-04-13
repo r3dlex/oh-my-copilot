@@ -1,3 +1,8 @@
+---
+name: omp-setup
+description: OMP onboarding and configuration wizard
+user-invocable: true
+---
 # Skill: OMP-Setup
 
 ## Metadata

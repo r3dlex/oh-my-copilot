@@ -1,3 +1,8 @@
+---
+name: psm
+description: Plugin State Manager operations
+user-invocable: true
+---
 # Skill: PSM
 
 ## Metadata

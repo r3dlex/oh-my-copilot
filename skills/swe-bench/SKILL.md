@@ -1,3 +1,8 @@
+---
+name: swe-bench
+description: SWE-bench evaluation harness runner
+user-invocable: true
+---
 # Skill: SWE-Bench
 
 ## Metadata

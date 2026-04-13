@@ -1,3 +1,8 @@
+---
+name: graphify
+description: Convert any input to a knowledge graph
+user-invocable: true
+---
 # Skill: Graphify
 
 ## Metadata

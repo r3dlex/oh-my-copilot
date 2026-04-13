@@ -1,3 +1,8 @@
+---
+name: configure-notifications
+description: Configure session notification settings
+user-invocable: true
+---
 # Skill: Configure-Notifications
 
 ## Metadata

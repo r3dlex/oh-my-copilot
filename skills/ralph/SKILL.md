@@ -1,3 +1,8 @@
+---
+name: ralph
+description: Persistence loop with architect verification gate
+user-invocable: true
+---
 # Skill: Ralph
 
 ## Metadata

@@ -1,3 +1,8 @@
+---
+name: setup
+description: OMP setup and onboarding wizard
+user-invocable: true
+---
 # Skill: Setup
 
 ## Metadata

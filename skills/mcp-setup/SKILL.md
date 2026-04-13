@@ -1,3 +1,8 @@
+---
+name: mcp-setup
+description: MCP server configuration wizard
+user-invocable: true
+---
 # Skill: MCP-Setup
 
 ## Metadata

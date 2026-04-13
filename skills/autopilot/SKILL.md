@@ -1,3 +1,8 @@
+---
+name: autopilot
+description: Autonomous end-to-end execution from idea to working code
+user-invocable: true
+---
 # Skill: Autopilot
 
 ## Metadata

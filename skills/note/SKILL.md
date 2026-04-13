@@ -1,3 +1,8 @@
+---
+name: note
+description: Session notes and context management
+user-invocable: true
+---
 # Skill: Note
 
 ## Metadata

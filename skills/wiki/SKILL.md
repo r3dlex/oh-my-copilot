@@ -1,3 +1,8 @@
+---
+name: wiki
+description: Project wiki operations and management
+user-invocable: true
+---
 # Skill: Wiki
 
 ## Metadata

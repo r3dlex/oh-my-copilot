@@ -1,3 +1,8 @@
+---
+name: trace
+description: Execution tracing and debugging
+user-invocable: true
+---
 # Skill: Trace
 
 ## Metadata

@@ -1,3 +1,8 @@
+---
+name: deep-interview
+description: Deep requirements interview workflow
+user-invocable: true
+---
 # Skill: Deep-Interview
 
 ## Metadata

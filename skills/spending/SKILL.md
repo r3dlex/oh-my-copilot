@@ -1,3 +1,8 @@
+---
+name: spending
+description: Track and reset premium request usage
+user-invocable: true
+---
 # Skill: Spending
 
 ## Metadata

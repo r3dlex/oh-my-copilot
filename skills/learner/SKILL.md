@@ -1,3 +1,8 @@
+---
+name: learner
+description: Structured learning and knowledge sessions
+user-invocable: true
+---
 # Skill: Learner
 
 ## Metadata

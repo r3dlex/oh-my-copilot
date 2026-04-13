@@ -1,0 +1,96 @@
+// src/hooks/delegation-enforcer.mts
+import { readFileSync } from "fs";
+import { homedir } from "os";
+import { join } from "path";
+import { fileURLToPath } from "url";
+function getSessionStateDir() {
+  const ompDir = join(homedir(), ".omp", "state");
+  return ompDir;
+}
+function getCurrentAgent(sessionId) {
+  try {
+    const stateDir = getSessionStateDir();
+    const sessionFile = sessionId ? join(stateDir, "sessions", sessionId, "session.json") : join(stateDir, "session.json");
+    const data = JSON.parse(readFileSync(sessionFile, "utf-8"));
+    return data.activeAgent || null;
+  } catch {
+    return null;
+  }
+}
+var BLOCKED_TOOLS = /* @__PURE__ */ new Set(["Write", "Edit"]);
+var BLOCKED_AGENT = "orchestrator";
+function processHook(input) {
+  const start = Date.now();
+  const log = [];
+  try {
+    if (input.hook_type !== "PreToolUse") {
+      return {
+        status: "skip",
+        latencyMs: Date.now() - start,
+        mutations: [],
+        log: ["Not a PreToolUse hook"]
+      };
+    }
+    const agentId = input.agent_id || getCurrentAgent(input.session_id);
+    const toolName = input.tool_name;
+    if (!agentId || !toolName) {
+      return {
+        status: "ok",
+        latencyMs: Date.now() - start,
+        mutations: [],
+        log: []
+      };
+    }
+    if (agentId === BLOCKED_AGENT && BLOCKED_TOOLS.has(toolName)) {
+      log.push(`ENFORCEMENT: ${agentId} attempted ${toolName} \u2014 blocked`);
+      log.push(`Rerouting to appropriate specialist agent`);
+      return {
+        decision: "deny",
+        status: "ok",
+        latencyMs: Date.now() - start,
+        mutations: [
+          {
+            type: "reroute_tool",
+            toolCall: { tool: toolName, params: input.tool_input },
+            toAgent: "executor"
+          },
+          {
+            type: "log",
+            level: "warn",
+            message: `Delegation enforced: ${agentId} cannot use ${toolName}`
+          }
+        ],
+        log
+      };
+    }
+    return {
+      status: "ok",
+      latencyMs: Date.now() - start,
+      mutations: [],
+      log: []
+    };
+  } catch (err) {
+    return {
+      status: "error",
+      latencyMs: Date.now() - start,
+      mutations: [],
+      log: [`Error: ${err}`]
+    };
+  }
+}
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const input = JSON.parse(await readStdin());
+  const output = processHook(input);
+  console.log(JSON.stringify(output));
+}
+async function readStdin() {
+  const chunks = [];
+  for await (const chunk of process.stdin) {
+    chunks.push(chunk);
+  }
+  return chunks.join("");
+}
+export {
+  processHook
+};
+//# sourceMappingURL=delegation-enforcer.mjs.map

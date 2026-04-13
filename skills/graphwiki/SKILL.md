@@ -1,3 +1,8 @@
+---
+name: graphwiki
+description: GraphWiki CLI operations: query, lint, build
+user-invocable: true
+---
 # Skill: GraphWiki
 
 ## Metadata

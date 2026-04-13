@@ -1,3 +1,8 @@
+---
+name: hud
+description: Display current HUD session state
+user-invocable: true
+---
 # Skill: HUD
 
 ## Metadata

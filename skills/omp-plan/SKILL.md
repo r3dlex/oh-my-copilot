@@ -1,3 +1,8 @@
+---
+name: omp-plan
+description: OMP-aware strategic planning
+user-invocable: true
+---
 # Skill: OMP-Plan
 
 ## Metadata
