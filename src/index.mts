@@ -10,6 +10,9 @@
  */
 
 import { parseArgs } from "util";
+import { createRequire } from "module";
+const _require = createRequire(import.meta.url);
+const { version: PKG_VERSION, name: PKG_NAME } = _require("../package.json") as { version: string; name: string };
 
 const { positionals } = parseArgs({
   args: process.argv.slice(2),
@@ -28,7 +31,7 @@ async function main() {
       await printHud();
       break;
     case "version":
-      console.log("oh-my-githubcopilot v1.0.0");
+      console.log(`${PKG_NAME} v${PKG_VERSION}`);
       break;
     case "psm":
       await runPsm(positionals.slice(1));
@@ -52,7 +55,7 @@ async function printHud() {
     const line = readFileSync(hudPath, "utf-8").trim();
     console.log(line);
   } catch {
-    console.log("OMP v1.0.0 | hud: no active session");
+    console.log(`OMP v${PKG_VERSION} | hud: no active session`);
   }
 }
 

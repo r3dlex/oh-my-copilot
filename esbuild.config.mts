@@ -76,6 +76,7 @@ await build({
   external: ["better-sqlite3"],
   sourcemap: true,
   minify: false,
+  banner: { js: "#!/usr/bin/env node" },
 });
 console.log("Built CLI tool: bin/omp.mjs");
 
