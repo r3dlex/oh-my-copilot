@@ -56,12 +56,12 @@ copilot plugin install r3dlex/oh-my-githubcopilot
 
 ```text
 /skills list
-/omp:setup
+/setup
 /mcp show
 ```
 
-`/omp:setup` now safely merges the required Copilot CLI experimental features into
-`~/.copilot/config.json` and fills in `statusLine` if you have not already configured one.
+`/setup` is the short setup alias, and `/omp:setup` remains available. Both safely merge the required Copilot CLI experimental features into
+`~/.copilot/config.json` and fill in `statusLine` if you have not already configured one.
 After setup completes, restart the Copilot CLI session so the new experimental/status-line settings are picked up.
 
 Required feature flags ensured by setup:
@@ -91,7 +91,7 @@ omp hud
 ```
 
 The `omp` CLI is a companion tool for local runtime features; the Copilot plugin works without it.
-Running `omp setup` performs the same non-destructive Copilot config merge as `/omp:setup`.
+Running `omp setup` performs the same non-destructive Copilot config merge as `/setup` (or `/omp:setup`).
 
 ### Optional: adopt OMP into another repository
 
@@ -151,17 +151,17 @@ OMP provides 23 specialized agents, each with Copilot-compatible frontmatter for
 
 | Skill | Trigger | Purpose |
 |------|---------|---------|
-| autopilot | `autopilot:` | Autonomous end-to-end execution |
-| ralph | `ralph:` | Persistent completion loop |
-| ultrawork | `ultrawork:` | Parallel multi-agent high-throughput implementation |
-| team | `team:` | Coordinated multi-agent execution |
-| deep-interview | `deep-interview:` | Requirements clarification |
-| omp-plan | `plan:` | Strategic planning |
-| omp-setup | `/omp:setup` | Guided OMP setup |
-| graphify | `graphify:` | Knowledge graph generation |
-| graphwiki | `graphwiki:` | Query and maintain graphwiki knowledge |
-| graph-provider | `graph-provider:` | Manage the active graph backend |
-| spending | `spending:` | Track premium request usage |
+| autopilot | `/omp:autopilot` | Autonomous end-to-end execution |
+| ralph | `/omp:ralph` | Persistent completion loop |
+| ultrawork | `/omp:ultrawork` | Parallel multi-agent high-throughput implementation |
+| team | `/omp:team` | Coordinated multi-agent execution |
+| deep-interview | `/omp:deep-interview` | Requirements clarification |
+| omp-plan | `/omp:plan` | Strategic planning |
+| omp-setup | `/setup`, `/omp:setup` | Guided OMP setup |
+| graphify | `/omp:graphify` | Knowledge graph generation |
+| graphwiki | `/omp:graphwiki` | Query and maintain graphwiki knowledge |
+| graph-provider | `/omp:graph-provider` | Manage the active graph backend |
+| spending | `/omp:spending` | Track premium request usage |
 | ... | ... | 25 total skills |
 
 ## Repository Layout
@@ -209,7 +209,7 @@ Then check:
 
 ```text
 /skills list
-/omp:setup
+/setup
 @executor
 /mcp show
 ```
