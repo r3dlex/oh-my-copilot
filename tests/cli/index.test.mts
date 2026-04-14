@@ -1,102 +1,98 @@
-/**
- * CLI Entry Point (src/index.mts) Unit Tests
- *
- * The index module runs top-level code (parseArgs + main()), so we test
- * the exported functions indirectly by re-importing with mocked process.argv.
- *
- * Strategy: mock fs/path/os and console, then import the module fresh for
- * each test group by isolating via vi.isolateModules.
- */
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-
-// Capture console output
 const consoleLog = vi.spyOn(console, "log").mockImplementation(() => {});
 const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-const processExit = vi.spyOn(process, "exit").mockImplementation((_code?: number) => {
-  throw new Error(`process.exit(${_code})`);
-});
-
-afterEach(() => {
-  vi.clearAllMocks();
-});
+const processExit = vi.spyOn(process, "exit").mockImplementation((code?: string | number | null) => {
+  throw new Error(`process.exit(${code ?? ""})`);
+}) as unknown as ReturnType<typeof vi.spyOn>;
 
 async function runIndex(argv: string[]) {
-  const original = process.argv;
-  process.argv = ["node", "omp", ...argv];
+  const originalArgv = process.argv;
   try {
-    await vi.importActual<typeof import("../../src/index.mts")>("../../src/index.mts");
-  } catch {
-    // ignore process.exit throws
+    process.argv = ["node", "omp", ...argv];
+    await vi.resetModules();
+    await import("../../src/index.mts");
+  } catch (error) {
+    if (!(error instanceof Error) || !error.message.startsWith("process.exit(")) {
+      throw error;
+    }
   } finally {
-    process.argv = original;
+    process.argv = originalArgv;
   }
 }
 
-describe("src/index.mts — CLI subcommands", () => {
-  describe("version subcommand", () => {
-    it("should print version string", async () => {
-      // We cannot re-import the module multiple times cleanly in vmThreads,
-      // so we test the helper functions by importing directly.
-      // The module auto-runs main() on import — we just verify the exports exist.
-      const mod = await import("../../src/index.mts").catch(() => null);
-      // Module may throw due to top-level main() running, that's fine.
-      // The important thing is the file gets executed (coverage).
-      expect(true).toBe(true);
-    });
-  });
-
-  describe("module execution", () => {
-    it("should have run without uncaught exceptions for default hud subcommand", () => {
-      // The module has already been imported above (top-level main() ran).
-      // If we reach here, no uncaught exception escaped.
-      expect(consoleLog).toBeDefined();
-    });
-  });
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.unmock("fs");
+  vi.unmock("os");
+  vi.unmock("path");
+  vi.unmock("../../src/hud/watch.mts");
 });
 
-// Test the individual async functions by extracting their logic directly
-// since the module self-executes on import.
-
-describe("printHud logic", () => {
-  it("should output hud line when file exists", async () => {
-    const { readFileSync } = await import("fs");
-    const mockRead = vi.spyOn({ readFileSync }, "readFileSync").mockReturnValue("HUD LINE" as any);
-
-    // The function body reads a file and logs it — verify the pattern works
-    try {
-      const line = "OMP v1.0.0 | hud: no active session";
-      expect(line).toContain("OMP");
-    } finally {
-      mockRead.mockRestore();
-    }
-  });
-
-  it("should output fallback when hud file missing", () => {
-    const fallback = "OMP v1.0.0 | hud: no active session";
-    expect(fallback).toContain("no active session");
-  });
+afterEach(() => {
+  vi.resetModules();
 });
 
-describe("runPsm output messages", () => {
-  it("should contain psm command descriptions", () => {
-    // Validate the expected output strings match what runPsm prints
-    const expectedStrings = [
-      "PSM commands:",
-      "create",
-      "list",
-      "switch",
-      "destroy",
-    ];
-    for (const s of expectedStrings) {
-      expect(s).toBeTruthy();
-    }
-  });
-});
+describe("src/index.mts CLI", () => {
+  it("prints the HUD line by default", async () => {
+    vi.doMock("fs", () => ({
+      readFileSync: vi.fn(() => "HUD LINE\n"),
+    }));
+    vi.doMock("os", () => ({ homedir: vi.fn(() => "/tmp/home") }));
+    vi.doMock("path", () => ({ join: vi.fn((...parts: string[]) => parts.join("/")) }));
 
-describe("runBench output messages", () => {
-  it("should contain bench description", () => {
-    const msg = "SWE-bench requires Node.js subprocess with Python evaluation harness.";
-    expect(msg).toContain("SWE-bench");
+    await runIndex([]);
+
+    expect(consoleLog).toHaveBeenCalledWith("HUD LINE");
+  });
+
+  it("prints the fallback HUD message when the HUD file is missing", async () => {
+    vi.doMock("fs", () => ({
+      readFileSync: vi.fn(() => {
+        throw new Error("ENOENT");
+      }),
+    }));
+
+    await runIndex(["hud"]);
+
+    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("hud: no active session"));
+  });
+
+  it("runs HUD watch mode when --watch is passed", async () => {
+    const runHudWatch = vi.fn();
+    vi.doMock("../../src/hud/watch.mts", () => ({ runHudWatch }));
+
+    await runIndex(["hud", "--watch"]);
+
+    expect(runHudWatch).toHaveBeenCalledTimes(1);
+  });
+
+  it("prints the package version", async () => {
+    await runIndex(["version"]);
+
+    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("oh-my-githubcopilot v"));
+  });
+
+  it("prints PSM guidance", async () => {
+    await runIndex(["psm"]);
+
+    expect(consoleLog).toHaveBeenCalledWith("PSM commands:");
+    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("create <name>"));
+    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("destroy session"));
+  });
+
+  it("prints SWE-bench guidance", async () => {
+    await runIndex(["bench"]);
+
+    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("SWE-bench requires Node.js subprocess"));
+    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("/omp:swe-bench"));
+  });
+
+  it("exits with usage output for an unknown subcommand", async () => {
+    await runIndex(["unknown"]);
+
+    expect(consoleError).toHaveBeenCalledWith("Unknown subcommand: unknown");
+    expect(consoleError).toHaveBeenCalledWith("Usage: omp [hud|version|psm|bench]");
+    expect(processExit).toHaveBeenCalledWith(1);
   });
 });
