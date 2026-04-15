@@ -50,7 +50,47 @@
         "command": "omp.clearState",
         "title": "OMP: Clear Workflow State"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "omp-explorer",
+          "title": "OMP",
+          "icon": "resources/icons/omp-activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "omp-explorer": [
+        {
+          "id": "omp.workflows",
+          "name": "Workflows"
+        },
+        {
+          "id": "omp.agents",
+          "name": "Agents"
+        },
+        {
+          "id": "omp.plans",
+          "name": "Plans"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "OMP",
+      "properties": {
+        "omp.autoRegisterMcp": {
+          "type": "boolean",
+          "default": true,
+          "description": "Register the OMP MCP server provider when the VS Code API and trusted workspace allow it."
+        },
+        "omp.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show OMP workflow status in the VS Code status bar."
+        }
+      }
+    }
   },
   "scripts": {
     "sync-templates": "node ./scripts/sync-templates.mjs",
