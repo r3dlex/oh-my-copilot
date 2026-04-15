@@ -17,45 +17,43 @@ export function activate(context: vscode.ExtensionContext): void {
   registerHealthCheckCommand(context, outputChannel);
   registerShowStatusCommand(context, outputChannel);
   registerClearStateCommand(context, outputChannel);
+  context.subscriptions.push(outputChannel);
 
   const workspace = vscode.workspace.workspaceFolders?.[0];
-  let backgroundFeaturesStarted = false;
-
-  if (workspace) {
-    registerTreeViews(context, workspace);
-
-    const startBackgroundFeatures = (): void => {
-      if (backgroundFeaturesStarted) {
-        return;
-      }
-
-      backgroundFeaturesStarted = true;
-      const config = vscode.workspace.getConfiguration("omp");
-
-      if (config.get<boolean>("showStatusBar", true)) {
-        createStatusBar(context, workspace);
-      }
-
-      if (config.get<boolean>("autoRegisterMcp", true)) {
-        void registerMcpProvider(context, workspace, outputChannel);
-      }
-    };
-
-    if (vscode.workspace.isTrusted) {
-      startBackgroundFeatures();
-    } else {
-      outputChannel.appendLine("OMP: Workspace is untrusted; UI is visible, but status/MCP background features are deferred.");
-    }
-
-    context.subscriptions.push(
-      vscode.workspace.onDidGrantWorkspaceTrust(() => {
-        outputChannel.appendLine("OMP: Workspace trust granted. Starting background features.");
-        startBackgroundFeatures();
-      }),
-    );
+  if (!workspace) {
+    outputChannel.appendLine("OMP: no workspace folder is open; UI helpers are idle.");
+    return;
   }
 
-  context.subscriptions.push(outputChannel);
+  registerTreeViews(context, workspace);
+  createStatusBar(context, workspace);
+  initializeTrustedFeatures(context, workspace, outputChannel);
+
+  context.subscriptions.push(
+    vscode.workspace.onDidGrantWorkspaceTrust(() => {
+      outputChannel.appendLine("OMP: workspace trust granted; enabling background features.");
+      initializeTrustedFeatures(context, workspace, outputChannel);
+    }),
+  );
+}
+
+function initializeTrustedFeatures(
+  context: vscode.ExtensionContext,
+  workspace: vscode.WorkspaceFolder,
+  outputChannel: vscode.OutputChannel,
+): void {
+  if (!vscode.workspace.isTrusted) {
+    outputChannel.appendLine("OMP: background features are gated until the workspace is trusted.");
+    return;
+  }
+
+  const extensionState = context.workspaceState;
+  if (!extensionState.get<boolean>("omp.mcpProviderRegistered")) {
+    const registered = registerMcpProvider(context, workspace, outputChannel);
+    if (registered) {
+      void extensionState.update("omp.mcpProviderRegistered", true);
+    }
+  }
 }
 
 export function deactivate(): void {

@@ -1,154 +1,116 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
 import * as vscode from "vscode";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { dirname, join } from "node:path";
 
-interface McpRuntimeResolution {
-  command: string;
-  args: string[];
-  displayPath: string;
+interface CopilotCliConfig {
+  trusted_folders?: string[];
 }
 
-interface VscodeMcpApi {
-  lm?: {
-    registerMcpServerDefinitionProvider?: (
-      id: string,
-      provider: { provideMcpServerDefinitions(): unknown[] },
-    ) => vscode.Disposable;
-  };
-  McpStdioServerDefinition?: new (
-    label: string,
-    command: string,
-    args: string[],
-    env?: Record<string, string>,
-  ) => unknown;
-}
-
-export async function registerMcpProvider(
+export function registerMcpProvider(
   context: vscode.ExtensionContext,
   workspace: vscode.WorkspaceFolder,
   outputChannel: vscode.OutputChannel,
-): Promise<void> {
+): boolean {
   if (!vscode.workspace.isTrusted) {
-    outputChannel.appendLine("OMP: Skipping MCP registration because the workspace is untrusted.");
-    return;
+    outputChannel.appendLine("OMP: Workspace is untrusted; MCP provider registration skipped.");
+    return false;
   }
 
-  const runtime = resolveMcpRuntime(workspace.uri.fsPath);
-  if (!runtime) {
-    outputChannel.appendLine("OMP: No MCP runtime was found in the workspace or installed OMP package.");
-    return;
+  if (!isCopilotTrusted(workspace.uri.fsPath)) {
+    outputChannel.appendLine(
+      `OMP: ${workspace.uri.fsPath} is not listed in ~/.copilot/config.json trusted_folders; MCP tools remain gated.`,
+    );
+    return false;
   }
 
-  const mcpApi = vscode as typeof vscode & VscodeMcpApi;
-  const registerProvider = mcpApi.lm?.registerMcpServerDefinitionProvider;
-  const McpDefinition = mcpApi.McpStdioServerDefinition;
-
-  if (typeof registerProvider === "function" && typeof McpDefinition === "function") {
-    const disposable = registerProvider("ompMcpProvider", {
-      provideMcpServerDefinitions(): unknown[] {
-        if (!vscode.workspace.isTrusted) {
-          return [];
-        }
-
-        const latestRuntime = resolveMcpRuntime(workspace.uri.fsPath);
-        if (!latestRuntime) {
-          return [];
-        }
-
-        return [
-          new McpDefinition("OMP Workflow", latestRuntime.command, latestRuntime.args, {
-            OMP_LOG_LEVEL: "info",
-            WORKSPACE_ROOT: workspace.uri.fsPath,
-          }),
-        ];
-      },
-    });
-
-    context.subscriptions.push(disposable);
-    outputChannel.appendLine(`OMP: Registered MCP provider for ${runtime.displayPath}.`);
-    return;
+  if (typeof vscode.lm?.registerMcpServerDefinitionProvider !== "function") {
+    outputChannel.appendLine("OMP: VS Code MCP provider API unavailable; writing static .vscode/mcp.json fallback.");
+    ensureStaticMcpConfig(workspace, outputChannel);
+    return true;
   }
 
-  outputChannel.appendLine("OMP: VS Code MCP provider API unavailable; offering .vscode/mcp.json fallback.");
-  await offerFallbackConfig(workspace, runtime, outputChannel);
+  const disposable = vscode.lm.registerMcpServerDefinitionProvider("ompMcpProvider", {
+    provideMcpServerDefinitions: async () => {
+      if (!vscode.workspace.isTrusted || !isCopilotTrusted(workspace.uri.fsPath)) {
+        return [];
+      }
+
+      const serverDist = resolveBundledMcpEntry(workspace.uri.fsPath);
+      if (!serverDist) {
+        outputChannel.appendLine("OMP: dist/mcp/server.mjs not found; MCP provider withheld until the workspace is built.");
+        return [];
+      }
+
+      return [
+        new vscode.McpStdioServerDefinition(
+          "OMP Workspace",
+          "node",
+          [serverDist],
+          {
+            OMP_WORKSPACE_ROOT: workspace.uri.fsPath,
+            OMX_TEAM_STATE_ROOT: join(workspace.uri.fsPath, ".omx", "state"),
+          },
+        ),
+      ];
+    },
+  });
+
+  context.subscriptions.push(disposable);
+  outputChannel.appendLine("OMP: MCP server definition provider registered.");
+  return true;
 }
 
-function resolveMcpRuntime(workspaceRoot: string): McpRuntimeResolution | undefined {
-  const candidates = [
-    join(workspaceRoot, "dist", "mcp", "server.mjs"),
-    join(workspaceRoot, ".omp", "dist", "mcp", "server.mjs"),
-    join(workspaceRoot, "node_modules", "oh-my-githubcopilot", "dist", "mcp", "server.mjs"),
-  ];
-
-  const serverPath = candidates.find((candidate) => existsSync(candidate));
-  if (!serverPath) {
-    return undefined;
-  }
-
-  return {
-    command: "node",
-    args: [serverPath],
-    displayPath: relative(workspaceRoot, serverPath) || serverPath,
-  };
+function resolveBundledMcpEntry(workspaceRoot: string): string | undefined {
+  const candidate = join(workspaceRoot, "dist", "mcp", "server.mjs");
+  return existsSync(candidate) ? candidate : undefined;
 }
 
-async function offerFallbackConfig(
-  workspace: vscode.WorkspaceFolder,
-  runtime: McpRuntimeResolution,
-  outputChannel: vscode.OutputChannel,
-): Promise<void> {
-  const choice = await vscode.window.showInformationMessage(
-    "OMP: VS Code's MCP provider API is unavailable. Create a trusted-workspace fallback .vscode/mcp.json?",
-    "Create Config",
-    "Not Now",
-  );
-
-  if (choice !== "Create Config") {
+function ensureStaticMcpConfig(workspace: vscode.WorkspaceFolder, outputChannel: vscode.OutputChannel): void {
+  const serverDist = resolveBundledMcpEntry(workspace.uri.fsPath);
+  if (!serverDist) {
+    outputChannel.appendLine("OMP: dist/mcp/server.mjs not found; static MCP fallback not written.");
     return;
   }
 
   const configPath = join(workspace.uri.fsPath, ".vscode", "mcp.json");
-  const desiredConfig = buildFallbackConfig(workspace.uri.fsPath, runtime);
-  const serialized = JSON.stringify(desiredConfig, null, 2);
-
-  if (existsSync(configPath)) {
-    const current = readFileSync(configPath, "utf8");
-    if (current.trim() === serialized.trim()) {
-      outputChannel.appendLine("OMP: Existing .vscode/mcp.json already matches the desired fallback config.");
-      return;
-    }
-
-    outputChannel.appendLine("OMP: Existing .vscode/mcp.json differs; leaving it untouched.");
-    void vscode.window.showWarningMessage(
-      "OMP: Existing .vscode/mcp.json differs from the OMP fallback template and was not overwritten.",
-    );
-    return;
-  }
-
   mkdirSync(dirname(configPath), { recursive: true });
-  writeFileSync(configPath, serialized);
-  outputChannel.appendLine("OMP: Created .vscode/mcp.json fallback configuration.");
-  void vscode.window.showInformationMessage("OMP: Created .vscode/mcp.json for MCP fallback mode.");
-}
 
-function buildFallbackConfig(workspaceRoot: string, runtime: McpRuntimeResolution): object {
-  const relativeRuntimePath = relative(workspaceRoot, runtime.args[0] ?? "");
-  const normalizedRuntimePath = relativeRuntimePath.startsWith(".")
-    ? relativeRuntimePath
-    : `./${relativeRuntimePath}`;
-
-  return {
-    schemaVersion: "1.0",
-    mcpServers: {
-      "oh-my-githubcopilot": {
+  const config = {
+    servers: {
+      omp: {
         type: "stdio",
-        command: runtime.command,
-        args: [normalizedRuntimePath],
+        command: "node",
+        args: ["${workspaceFolder}/dist/mcp/server.mjs"],
         env: {
-          OMP_LOG_LEVEL: "info",
-          WORKSPACE_ROOT: "${workspaceFolder}",
+          OMP_WORKSPACE_ROOT: "${workspaceFolder}",
+          OMX_TEAM_STATE_ROOT: "${workspaceFolder}/.omx/state",
         },
       },
     },
   };
+
+  writeFileSync(configPath, JSON.stringify(config, null, 2));
+  outputChannel.appendLine(`OMP: Wrote MCP fallback config to ${configPath}.`);
+}
+
+function isCopilotTrusted(workspaceRoot: string): boolean {
+  const configPath = join(homedir(), ".copilot", "config.json");
+  if (!existsSync(configPath)) {
+    return true;
+  }
+
+  try {
+    const config = JSON.parse(readFileSync(configPath, "utf8")) as CopilotCliConfig;
+    const trustedFolders = config.trusted_folders;
+    if (!Array.isArray(trustedFolders) || trustedFolders.length === 0) {
+      return true;
+    }
+
+    return trustedFolders.some((trustedFolder) =>
+      workspaceRoot === trustedFolder || workspaceRoot.startsWith(`${trustedFolder}/`),
+    );
+  } catch {
+    return true;
+  }
 }
