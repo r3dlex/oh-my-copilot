@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { syncBundledTemplates } from "../adapters/template-sync";
 import { formatError, requireTrustedWorkspace, requireWorkspace, revealOutput } from "./shared";
 
@@ -16,6 +18,16 @@ export function registerUpdateFilesCommand(
 async function updateFiles(context: vscode.ExtensionContext, outputChannel: vscode.OutputChannel): Promise<void> {
   const workspace = requireWorkspace();
   if (!workspace || !requireTrustedWorkspace("Update Convention Files")) {
+    return;
+  }
+
+  const hasManagedFiles = [".copilot", ".github/hooks"].some((relativePath) =>
+    existsSync(join(workspace.uri.fsPath, relativePath)),
+  );
+  if (!hasManagedFiles) {
+    void vscode.window.showErrorMessage(
+      "OMP: This workspace does not appear to be initialized yet. Run “OMP: Initialize Workspace” first.",
+    );
     return;
   }
 

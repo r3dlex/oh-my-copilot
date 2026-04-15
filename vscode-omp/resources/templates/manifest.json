@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-04-15T21:47:18.516Z",
+  "mappings": [
+    {
+      "description": "Copilot conventions",
+      "source": ".copilot",
+      "target": ".copilot"
+    },
+    {
+      "description": "Hook entrypoints",
+      "source": ".github/hooks",
+      "target": ".github/hooks"
+    }
+  ]
+}

@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { findBundledTemplateProblems, syncBundledTemplates } from "../adapters/template-sync";
 import { formatError, requireTrustedWorkspace, requireWorkspace, revealOutput } from "./shared";
 
@@ -32,13 +34,9 @@ async function initializeWorkspace(
     return;
   }
 
-  const overwriteNeeded = [".copilot", ".github/hooks"].some((relativePath) =>
-    vscode.workspace.fs.stat(vscode.Uri.joinPath(workspace.uri, ...relativePath.split("/"))).then(
-      () => true,
-      () => false,
-    ),
+  const existingTargets = [".copilot", ".github/hooks"].map((relativePath) =>
+    existsSync(join(workspace.uri.fsPath, relativePath)),
   );
-  const existingTargets = await Promise.all(overwriteNeeded);
   if (existingTargets.some(Boolean)) {
     const answer = await vscode.window.showWarningMessage(
       "OMP: This workspace already contains OMP convention files. Overwrite the managed files?",
