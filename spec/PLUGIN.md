@@ -43,12 +43,18 @@ Every OMP plugin must have a `plugin.json` at the project root:
     "./skills/plan"
   ],
   "hooks": [
-    { "id": "keyword-detector",    "entry": "./dist/hooks/keyword-detector.mjs" },
-    { "id": "delegation-enforcer","entry": "./dist/hooks/delegation-enforcer.mjs" },
-    { "id": "stop-continuation",  "entry": "./dist/hooks/stop-continuation.mjs" },
-    { "id": "token-tracker",      "entry": "./dist/hooks/token-tracker.mjs" },
-    { "id": "model-router",       "entry": "./dist/hooks/model-router.mjs" },
-    { "id": "hud-emitter",        "entry": "./dist/hooks/hud-emitter.mjs" }
+    { "id": "keyword-detector", "entry": "./dist/hooks/keyword-detector.mjs" },
+    {
+      "id": "delegation-enforcer",
+      "entry": "./dist/hooks/delegation-enforcer.mjs"
+    },
+    {
+      "id": "stop-continuation",
+      "entry": "./dist/hooks/stop-continuation.mjs"
+    },
+    { "id": "token-tracker", "entry": "./dist/hooks/token-tracker.mjs" },
+    { "id": "model-router", "entry": "./dist/hooks/model-router.mjs" },
+    { "id": "hud-emitter", "entry": "./dist/hooks/hud-emitter.mjs" }
   ],
   "permissions": ["filesystem", "network", "exec"],
   "peerDependencies": {
@@ -115,12 +121,36 @@ Hooks are registered via `hooks.json` at the project root:
 {
   "schemaVersion": "1.0",
   "hooks": [
-    { "id": "keyword-detector",    "entry": "./src/hooks/keyword-detector.ts", "trigger": "pre-cycle" },
-    { "id": "delegation-enforcer", "entry": "./src/hooks/delegation-enforcer.ts", "trigger": "pre-cycle" },
-    { "id": "model-router",       "entry": "./src/hooks/model-router.ts", "trigger": "pre-cycle" },
-    { "id": "token-tracker",      "entry": "./src/hooks/token-tracker.ts", "trigger": "post-message" },
-    { "id": "hud-emitter",        "entry": "./src/hooks/hud-emitter.ts", "trigger": "post-cycle" },
-    { "id": "stop-continuation",  "entry": "./src/hooks/stop-continuation.ts", "trigger": "post-message" }
+    {
+      "id": "keyword-detector",
+      "entry": "./src/hooks/keyword-detector.ts",
+      "trigger": "pre-cycle"
+    },
+    {
+      "id": "delegation-enforcer",
+      "entry": "./src/hooks/delegation-enforcer.ts",
+      "trigger": "pre-cycle"
+    },
+    {
+      "id": "model-router",
+      "entry": "./src/hooks/model-router.ts",
+      "trigger": "pre-cycle"
+    },
+    {
+      "id": "token-tracker",
+      "entry": "./src/hooks/token-tracker.ts",
+      "trigger": "post-message"
+    },
+    {
+      "id": "hud-emitter",
+      "entry": "./src/hooks/hud-emitter.ts",
+      "trigger": "post-cycle"
+    },
+    {
+      "id": "stop-continuation",
+      "entry": "./src/hooks/stop-continuation.ts",
+      "trigger": "post-message"
+    }
   ]
 }
 ```
@@ -151,21 +181,38 @@ OMP can operate as a standalone plugin or as a `.claude-plugin/` embedded within
 
 The Copilot CLI traverses the filesystem looking for `plugin.json` files. OMP uses the `.claude-plugin/` namespace to avoid conflicts with local project files.
 
-## 7. Installation Methods
+## 7. Optional VS Code Companion Package
+
+In addition to the Copilot CLI plugin, OMP may ship an optional workspace package at `vscode-omp/` that builds a
+VS Code companion extension. This package is intentionally separate from the root plugin runtime:
+
+- **Root package (`./`)** — Copilot CLI plugin, MCP server, hooks, skills, and CLI companion
+- **Extension package (`./vscode-omp`)** — editor-facing UI such as activity trees, status-bar integration, and VSIX packaging
+
+Design constraints for this split:
+
+- The root plugin must continue to build/test/package cleanly when `vscode-omp/` is absent.
+- Extension CI/release hooks must be conditional on `vscode-omp/package.json` existing.
+- The extension keeps its own README, tests, and package-local build/package scripts.
+
+## 8. Installation Methods
 
 OMP supports three installation methods:
 
-| Method | Command | Use case |
-|--------|---------|----------|
-| Global plugin | `copilot plugin install oh-my-githubcopilot` | Shared across all projects |
-| Project dependency | `npm install oh-my-githubcopilot --save-dev` | Pinned version per project |
-| Submodule | `git submodule add <repo> .claude-plugin/oh-my-githubcopilot` | Embedded, version-controlled |
+| Method             | Command                                                       | Use case                     |
+| ------------------ | ------------------------------------------------------------- | ---------------------------- |
+| Global plugin      | `copilot plugin install oh-my-githubcopilot`                  | Shared across all projects   |
+| Project dependency | `npm install oh-my-githubcopilot --save-dev`                  | Pinned version per project   |
+| Submodule          | `git submodule add <repo> .claude-plugin/oh-my-githubcopilot` | Embedded, version-controlled |
 
-## 8. Peer Dependencies
+If the optional VS Code package exists, it is distributed separately as a VSIX artifact and does not replace the
+Copilot CLI plugin installation paths above.
+
+## 9. Peer Dependencies
 
 OMP requires `@anthropic-ai/copilot-cli` version `>=1.0.0`. The plugin will not activate if the peer dependency is not satisfied. A warning is logged with a link to installation instructions.
 
-## 9. Permissions
+## 10. Permissions
 
 OMP requests the following permissions (declared in `plugin.json`):
 

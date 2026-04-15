@@ -3,17 +3,17 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
     branches:
       - main
   workflow_dispatch:
     inputs:
       dry-run:
-        description: 'Dry run (skip actual publish and GitHub release)'
+        description: "Dry run (skip actual publish and GitHub release)"
         type: boolean
         default: false
       release_type:
-        description: 'Force release type (auto = detect from tag)'
+        description: "Force release type (auto = detect from tag)"
         type: choice
         options:
           - auto
@@ -68,12 +68,21 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - run: npm ci
 
       - run: npm run build
+
+      - name: Build optional VS Code companion
+        if: ${{ hashFiles('vscode-omp/package.json') != '' }}
+        run: |
+          cd vscode-omp
+          npm ci
+          npm run build --if-present
+          npm test --if-present
+          npm run package --if-present
 
       - run: npm run sync-claude-plugin
 
@@ -86,6 +95,17 @@ jobs:
           name: release-build
           path: /tmp/release-artifact.tar.gz
           retention-days: 1
+
+      - name: Upload VSIX artifacts
+        if: ${{ hashFiles('vscode-omp/package.json') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-omp-artifacts
+          path: |
+            vscode-omp/*.vsix
+            vscode-omp/dist/**
+            vscode-omp/out/**
+          if-no-files-found: ignore
 
   test:
     runs-on: ubuntu-latest
@@ -102,8 +122,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - run: npm ci
 
@@ -146,7 +166,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - run: npm ci --omit=dev
 
@@ -191,8 +211,8 @@ jobs:
       - name: Setup Node for GitHub Packages
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          registry-url: 'https://npm.pkg.github.com'
+          node-version: "22"
+          registry-url: "https://npm.pkg.github.com"
 
       - name: Publish to GitHub Packages
         if: ${{ !inputs.dry-run }}
@@ -216,8 +236,8 @@ jobs:
       - name: Setup Node for npmjs.com
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Check if version already published on npmjs.com (stable idempotency)
         if: needs.build.outputs.release_type == 'stable' && !inputs.dry-run
@@ -267,7 +287,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - run: npm ci --omit=dev
 

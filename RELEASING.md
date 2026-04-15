@@ -10,6 +10,7 @@ Copilot-facing documentation now lives under `.copilot/`. The `.github/` directo
 - `NPM_TOKEN` configured as a GitHub Actions secret (see [Secret Setup](#secret-setup))
 - Node.js >= 22.0.0
 - Fresh built artifacts in `dist/` committed to git before release publication (plugin consumers may install without running a build)
+- If `vscode-omp/` exists, a fresh VSIX build/package artifact verified from that package before release
 
 ## Continuous Alpha Releases
 
@@ -143,6 +144,18 @@ npm run build
 npm pack --dry-run
 ```
 
+If the optional `vscode-omp/` package exists, also verify the editor companion package from that directory:
+
+```bash
+cd vscode-omp
+npm ci
+npm run build --if-present
+npm test --if-present
+npm run package --if-present
+```
+
+Return to the repository root before creating the release commit/tag.
+
 ### Step 6: Create the release commit and tag
 
 After writing the CHANGELOG and syncing manifests, create the release commit and tag:
@@ -171,6 +184,9 @@ The `Release` GitHub Actions workflow runs automatically and executes 4 jobs in 
 - **test** — Typechecks, runs the test suite, and **verifies CHANGELOG.md exists with the correct version**
 - **publish** — Verifies versions match, packs the tarball, and publishes to npm on the `latest` dist-tag
 - **github-release** — Creates a GitHub Release with auto-generated notes and attaches the `.tgz`
+
+When `vscode-omp/package.json` exists, CI and release automation also run the extension package's optional
+build/test/package scripts and upload any produced `.vsix` artifacts for inspection.
 
 Monitor at: `https://github.com/r3dlex/oh-my-githubcopilot/actions`
 
@@ -241,3 +257,4 @@ On most systems these are already present. If installation fails with a build er
 ## Known Limitations
 
 - **Agent loader**: `src/utils/agent-loader.mts` resolves agent `.md` files via `process.cwd()`, which works when running from the repository root but not for globally installed consumers. A fix to use `import.meta.url` is tracked as a follow-up.
+- **VS Code companion package**: The VSIX lane is conditional. CI/release hooks are in place, but no extension artifact is produced until the `vscode-omp/` package scaffold and scripts land.

@@ -96,6 +96,15 @@ The `omp` CLI is a companion tool for local runtime features; the Copilot plugin
 Running `omp setup` performs the same non-destructive Copilot config merge as `/setup` (or `/omp:setup`).
 Use `omp hud --watch` when you want the local HUD daemon to keep refreshing session artifacts in the background.
 
+### Optional: package the VS Code companion extension
+
+OMP's primary runtime target is the GitHub Copilot CLI plugin in this repository root. When the optional
+`vscode-omp/` workspace package is present, it builds a companion VS Code extension that can be packaged as a
+`.vsix` for editor-side surfaces such as tree views, status-bar affordances, and trusted MCP handoff flows.
+
+See `vscode-omp/README.md` for the package-local build/test/package flow and `RELEASING.md` for the additional
+release checks to run before publishing a VSIX artifact.
+
 ### Optional: adopt OMP into another repository
 
 ```bash
@@ -177,6 +186,7 @@ OMP provides 23 specialized agents, each with Copilot-compatible frontmatter for
 ├── hooks/           # hook config + shell entrypoints
 ├── src/             # TypeScript implementation
 ├── dist/            # built runtime artifacts committed for plugin consumers
+├── vscode-omp/      # optional VS Code companion extension / VSIX package
 ├── .github/
 │   ├── hooks/       # GitHub/Copilot hook entrypoints
 │   ├── plugin/      # plugin metadata
@@ -216,4 +226,14 @@ Then check:
 /setup
 @executor
 /mcp show
+```
+
+If `vscode-omp/` exists, also run the extension package's own verification before release:
+
+```bash
+cd vscode-omp
+npm ci
+npm run build --if-present
+npm test --if-present
+npm run package --if-present
 ```
