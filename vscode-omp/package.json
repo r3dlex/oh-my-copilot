@@ -1,0 +1,70 @@
+{
+  "name": "vscode-omp",
+  "displayName": "OMP for VS Code",
+  "description": "VS Code companion extension for initializing and monitoring OMP workspaces.",
+  "version": "0.1.0",
+  "publisher": "r3dlex",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "keywords": [
+    "omp",
+    "copilot",
+    "multi-agent",
+    "orchestration",
+    "workflow"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:omp.initWorkspace",
+    "onCommand:omp.updateFiles",
+    "onCommand:omp.healthCheck",
+    "onCommand:omp.showStatus",
+    "onCommand:omp.clearState"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "omp.initWorkspace",
+        "title": "OMP: Initialize Workspace"
+      },
+      {
+        "command": "omp.updateFiles",
+        "title": "OMP: Update Convention Files"
+      },
+      {
+        "command": "omp.healthCheck",
+        "title": "OMP: Run Health Check"
+      },
+      {
+        "command": "omp.showStatus",
+        "title": "OMP: Show Workflow Status"
+      },
+      {
+        "command": "omp.clearState",
+        "title": "OMP: Clear Workflow State"
+      }
+    ]
+  },
+  "scripts": {
+    "sync-templates": "node ./scripts/sync-templates.mjs",
+    "compile": "npm run sync-templates && esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --sourcemap",
+    "watch": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --sourcemap --watch",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "package": "npm run compile && vsce package --allow-missing-repository",
+    "package:dry": "npm run compile && vsce package --allow-missing-repository --no-yarn"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "@types/vscode": "^1.96.0",
+    "@vscode/vsce": "^3.6.2",
+    "esbuild": "^0.25.10",
+    "typescript": "^5.9.3"
+  }
+}
