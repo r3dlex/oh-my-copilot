@@ -36,7 +36,6 @@ writeFileSync(
   join(templateRoot, "manifest.json"),
   JSON.stringify(
     {
-      generatedAt: new Date().toISOString(),
       mappings: mappings.map((mapping) => ({
         description: mapping.description,
         source: relative(repoRoot, mapping.source),
