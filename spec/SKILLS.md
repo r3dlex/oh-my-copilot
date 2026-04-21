@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-Skills extend agent capabilities by activating specialized workflows triggered by magic keywords. OMP ships with 25 skills organized into three categories: execution modes (8), planning tools (8), and developer tools (9). Skills use lazy loading — they are not instantiated until triggered.
+Skills extend agent capabilities by activating specialized workflows triggered by magic keywords. OMP ships with 39 skills organized into three categories: execution modes (9), planning tools (9), and developer tools (21). Skills use lazy loading — they are not instantiated until triggered.
 
 ## 2. Lazy Loading
 
@@ -59,6 +59,7 @@ Execution mode skills are top-level workflows that take over session orchestrati
 | 6 | `swarm` | `swarm:`, `/swarm` | Swarm orchestration with shared state. Multiple agents work on sub-problems simultaneously. |
 | 7 | `pipeline` | `pipeline:`, `/pipeline` | Sequential pipeline mode. Strict phase ordering enforced: plan → build → test → deploy. |
 | 8 | `plan` | `plan:`, `/plan` | Strategic planning mode with optional interview workflow. Delays implementation until plan is approved. |
+| 9 | `ralplan` | `ralplan:` | Consensus planning entrypoint that auto-gates vague ralph/autopilot/team requests before execution. |
 
 ### 4.2 Planning Tools
 
@@ -72,6 +73,7 @@ Execution mode skills are top-level workflows that take over session orchestrati
 | 14 | `deepinit` | Deep codebase initialization with hierarchical AGENTS.md documentation |
 | 15 | `wiki` | LLM Wiki — persistent markdown knowledge base that compounds across sessions |
 | 16 | `sciomc` | Orchestrate parallel scientist agents for comprehensive analysis with AUTO mode |
+| 17 | `research` | External research via parallel document-specialist agents; `autoresearch:` trigger |
 
 ### 4.3 Developer Tools
 
@@ -89,6 +91,18 @@ Execution mode skills are top-level workflows that take over session orchestrati
 | 26 | `visual-verdict` | Structured visual QA verdict for screenshot-to-reference comparisons. |
 | 27 | `writer-memory` | Agentic memory system for writers — track characters, relationships, scenes, themes. |
 | 28 | `project-session-manager` | Worktree-first dev environment manager for issues, PRs, and features. |
+| 29 | `ai-slop-cleaner` | Clean AI-generated code slop with a regression-safe, deletion-first approach. Trigger: `deslop`. |
+| 30 | `tdd` | Test-driven development workflow: write failing tests first, then implement. Trigger: `tdd:`. |
+| 31 | `improve-codebase-architecture` | Systematic architecture improvement with dependency analysis and refactor planning. |
+| 32 | `skillify` | Turn a repeatable workflow from the current session into a reusable OMP skill draft. |
+| 33 | `interview` | Socratic interview to extract requirements and constraints before execution. |
+| 34 | `graph-context` | Build and query a knowledge graph from the current codebase context. |
+| 35 | `interactive-menu` | Render an interactive terminal menu for skill and agent selection. |
+| 36 | `omp-doctor` | Diagnose and fix OMP installation issues; checks hooks, agents, plugin manifest. |
+| 37 | `omp-reference` | OMP agent catalog, available tools, team pipeline routing, commit protocol reference. |
+| 38 | `notifications` | Configure and send notifications (Telegram, Discord, Slack) via webhook integrations. |
+| 39 | `doctor` | General environment health check — shell, Node, Git, and plugin state diagnostics. |
+| 40 | `session` | Manage OMP session state — save, restore, list, and switch between named sessions. |
 
 ## 5. OMA Skill Porting (5-Step Process)
 

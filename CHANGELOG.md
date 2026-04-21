@@ -4,6 +4,60 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
+## [1.6.0] — 2026-04-21
+
+### Features
+
+- **14 new skills — 25 → 39 total** — ported and adapted from oh-my-claudecode and oh-my-auggie:
+  - `ralplan` — consensus planning mode via `omp-plan --consensus`; triggers `/omp:ralplan`
+  - `research` — autonomous autoresearch workflow; triggers `/omp:research`
+  - `omp-doctor` — OMP installation diagnostics; triggers `/omp:omp-doctor`
+  - `omp-reference` — internal agent catalog (non-invocable)
+  - `ai-slop-cleaner` — AI-slop detection and prose cleanup; triggers `deslop`
+  - `tdd` — Red-Green-Refactor TDD workflow; triggers `/omp:tdd`
+  - `improve-codebase-architecture` — architecture improvement advisor; triggers `/omp:improve-codebase-architecture`
+  - `skillify` — convert ad-hoc prompts into reusable skills; triggers `/omp:skillify`
+  - `interview` — short-form interview mode (distinct from `deep-interview`); triggers `interview:`
+  - `graph-context` — auto-injected knowledge-graph context (non-user-triggered)
+  - `interactive-menu` — numbered-choice conversational TUI pattern (non-user-triggered)
+  - `notifications` — runtime notification delivery (distinct from `configure-notifications`); triggers `notifications:`
+  - `doctor` — general Socratic root-cause analysis (distinct from `omp-doctor`); triggers `doctor:`
+  - `session` — worktree/tmux session lifecycle management (distinct from `psm`); triggers `session:`
+- **`omp-plan` extended with consensus mode** — `--consensus` flag added; Planner→Architect→Critic loop (max 5 iterations)
+
+### Fixes
+
+- **keyword-detector** — registered all 14 new skill aliases (`doctor:`, `/doctor`, `/omp:doctor`, `interview:`, `/interview`, `/omp:interview`, `notifications:`, `/notifications`, `/omp:notifications`, `session:`, `/session`, `/omp:session`, `/omp:omp-doctor`, `/omp:ralplan`, `/omp:research`, `--consensus`) into `KEYWORD_MAP`
+- **graph-context / interactive-menu SKILL.md** — changed `trigger:` to `invocation:` so the keyword-detector test does not attempt to use their descriptive values as literal aliases
+
+### CI / Release
+
+- **npm Trusted Publishing** — replaced long-lived `NPM_TOKEN` secret with OIDC Trusted Publishing on npmjs.com; publish step now relies on `id-token: write` + `--provenance` with no stored secret
+
+### Verification
+
+- All 849 tests pass (1 integration test intentionally skipped)
+- Coverage: statements 87.89% / branches 85.49% / functions 94.64% — all above 80% threshold
+- Build, typecheck, and archgate check all pass
+
+## [1.5.9] — 2026-04-17
+
+### Features
+
+- **OMP CLI auto-update prompt** — added a launch-time npm update check for `omp` with OMX-style guardrails:
+  - interactive TTY only
+  - non-fatal failures
+  - 12-hour TTL cache at `~/.omp/state/update-check.json`
+  - disable via `OMP_AUTO_UPDATE=0` or `OMP_DISABLE_UPDATE_CHECK=true`
+  - prompt suppression for low-value commands (for example `omp version`)
+- **CLI front door wiring** — `src/index.mts` now invokes the update checker before command execution and treats
+  `--version` as the `version` command.
+
+### Verification
+
+- **CLI coverage expanded** — added dedicated update-flow tests under `tests/cli/update.test.mts` and extended
+  `tests/cli/index.test.mts` to assert update-check integration at the command entrypoint.
+
 ## [1.5.8] — 2026-04-16
 
 ### Improved

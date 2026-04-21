@@ -22,6 +22,7 @@ beforeEach(() => {
   vi.unmock("os");
   vi.unmock("path");
   vi.unmock("../../src/hud/watch.mts");
+  vi.unmock("../../src/cli/update.mts");
 });
 
 afterEach(() => {
@@ -39,6 +40,22 @@ describe("src/index.mts CLI", () => {
     await runIndex([]);
 
     expect(consoleLog).toHaveBeenCalledWith("HUD LINE");
+  });
+
+  it("runs the launch-time update check for normal subcommands", async () => {
+    const maybeCheckAndPromptUpdate = vi.fn(async () => undefined);
+    vi.doMock("../../src/cli/update.mts", () => ({ maybeCheckAndPromptUpdate }));
+
+    await runIndex(["hud"]);
+
+    expect(maybeCheckAndPromptUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cwd: process.cwd(),
+        packageName: "oh-my-githubcopilot",
+        currentVersion: expect.any(String),
+        subcommand: "hud",
+      })
+    );
   });
 
   it("prints the fallback HUD message when the HUD file is missing", async () => {
@@ -87,7 +104,7 @@ describe("src/index.mts CLI", () => {
     await runIndex(["unknown"]);
 
     expect(consoleError).toHaveBeenCalledWith("Unknown subcommand: unknown");
-    expect(consoleError).toHaveBeenCalledWith("Usage: omp [hud|version|psm|bench]");
+    expect(consoleError).toHaveBeenCalledWith("Usage: omp [hud|version|psm|bench] [--watch]");
     expect(processExit).toHaveBeenCalledWith(1);
   });
 });

@@ -11,6 +11,7 @@
 
 import { parseArgs } from "util";
 import { createRequire } from "module";
+import { maybeCheckAndPromptUpdate } from "./cli/update.mts";
 const _require = createRequire(import.meta.url);
 const { version: PKG_VERSION, name: PKG_NAME } = _require("../package.json") as { version: string; name: string };
 
@@ -25,9 +26,26 @@ const { positionals, values: flags } = parseArgs({
 });
 
 const subcommand = positionals[0] || "hud";
+const resolvedSubcommand = flags.version && !positionals[0] ? "version" : subcommand;
 
 async function main() {
-  switch (subcommand) {
+  if (flags.help) {
+    printUsage();
+    return;
+  }
+
+  await maybeCheckAndPromptUpdate({
+    cwd: process.cwd(),
+    packageName: PKG_NAME,
+    currentVersion: PKG_VERSION,
+    subcommand: resolvedSubcommand,
+    flags: {
+      help: flags.help,
+      version: flags.version,
+    },
+  });
+
+  switch (resolvedSubcommand) {
     case "hud":
       if (flags.watch) {
         const { runHudWatch } = await import("./hud/watch.mts");
@@ -46,10 +64,15 @@ async function main() {
       await runBench(positionals.slice(1));
       break;
     default:
-      console.error(`Unknown subcommand: ${subcommand}`);
-      console.error("Usage: omp [hud|version|psm|bench]");
+      console.error(`Unknown subcommand: ${resolvedSubcommand}`);
+      printUsage(true);
       process.exit(1);
   }
+}
+
+function printUsage(stderr = false) {
+  const output = stderr ? console.error : console.log;
+  output("Usage: omp [hud|version|psm|bench] [--watch]");
 }
 
 async function printHud() {

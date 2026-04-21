@@ -75,6 +75,7 @@ When an execution mode is active, follow its skill instructions exactly:
 | `swarm` | Magic keyword or `/swarm:` | Swarm orchestration. Multiple agents with shared state. |
 | `pipeline` | Magic keyword or `/pipeline:` | Sequential pipeline mode. Strict phase ordering. |
 | `plan` | Magic keyword or `/plan:` | Strategic planning. Use planner agent; delay implementation. |
+| `ralplan` | Magic keyword or `ralplan:` | Consensus planning entrypoint that auto-gates vague ralph/autopilot/team requests. |
 
 ## HUD Awareness
 
@@ -101,6 +102,23 @@ See `spec/HOOKS.md` for hook schema and registration.
 ## Skill Routing
 
 Skills extend agent capabilities. See `spec/SKILLS.md` for the full registry and lazy loading mechanism.
+
+### Magic Keyword Triggers
+
+| Keyword | Skill | Purpose |
+|---------|-------|---------|
+| `autopilot:` / `/autopilot` | `autopilot` | Autonomous end-to-end execution |
+| `ralph:` / `/ralph` | `ralph` | Self-referential loop until task complete |
+| `ulw:` / `ultrawork:` / `/ulw` | `ultrawork` | Parallel high-throughput execution |
+| `team:` / `/team` | `team` | Multi-agent session on shared task list |
+| `eco:` / `ecomode:` / `/eco` | `ecomode` | Token budget mode |
+| `swarm:` / `/swarm` | `swarm` | Swarm orchestration with shared state |
+| `pipeline:` / `/pipeline` | `pipeline` | Sequential phase-ordered pipeline |
+| `plan:` / `/plan` | `omp-plan` | Strategic planning with interview workflow |
+| `ralplan:` | `ralplan` | Consensus planning entrypoint; gates vague ralph/autopilot/team requests |
+| `deslop` | `ai-slop-cleaner` | Clean AI-generated code slop; regression-safe, deletion-first |
+| `tdd:` | `tdd` | Test-driven development workflow |
+| `autoresearch:` | `research` | External research via parallel document-specialist agents |
 
 ## Plugin Integration
 

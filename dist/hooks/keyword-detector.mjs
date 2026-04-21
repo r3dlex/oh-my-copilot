@@ -84,7 +84,23 @@ var KEYWORD_MAP = {
   "/graph-provider": "graph-provider",
   "/omp:graph-provider": "graph-provider",
   "/spending": "spending",
-  "/omp:spending": "spending"
+  "/omp:spending": "spending",
+  "--consensus": "omp-plan",
+  "/omp:omp-doctor": "omp-doctor",
+  "/omp:ralplan": "ralplan",
+  "/omp:research": "research",
+  "doctor:": "doctor",
+  "/doctor": "doctor",
+  "/omp:doctor": "doctor",
+  "interview:": "interview",
+  "/interview": "interview",
+  "/omp:interview": "interview",
+  "notifications:": "notifications",
+  "/notifications": "notifications",
+  "/omp:notifications": "notifications",
+  "session:": "session",
+  "/session": "session",
+  "/omp:session": "session"
 };
 var KEYWORD_ENTRIES = Object.entries(KEYWORD_MAP).sort(([a], [b]) => b.length - a.length);
 var CANONICAL_COMMAND_MAP = {

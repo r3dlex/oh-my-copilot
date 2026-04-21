@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  Multi-agent orchestration for GitHub Copilot CLI — powered by 23 specialized agents, 25 skills, and a real-time HUD.
+  Multi-agent orchestration for GitHub Copilot CLI — powered by 23 specialized agents, 39 skills, and a real-time HUD.
 </p>
 
 [![npm version](https://img.shields.io/npm/v/oh-my-githubcopilot?color=red)](https://npmjs.com/package/oh-my-githubcopilot)
@@ -22,7 +22,7 @@ Every software team juggles implementation, architecture, security review, testi
 | What you get            | Why it matters                                                                                                                                         |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **23 agents**           | executor, architect, planner, reviewer, debugger, designer, security-reviewer, scientist, analyst, and more — each tuned to a different craft          |
-| **25 skills**           | `autopilot`, `ralph`, `ultrawork`, `team`, `ecomode`, `swarm`, `pipeline`, `omp-plan`, `graphify`, `spending`, and more — trigger with a slash command |
+| **39 skills**           | `autopilot`, `ralph`, `ultrawork`, `team`, `ecomode`, `swarm`, `pipeline`, `omp-plan`, `graphify`, `spending`, and more — trigger with a slash command |
 | **6 hooks**             | Keyword detection, delegation routing, model selection, token tracking, HUD emission, stop-continuation                                                |
 | **MCP server**          | Built-in tools for extended capabilities                                                                                                               |
 | **HUD display**         | Real-time session context and progress tracking                                                                                                        |
@@ -95,6 +95,9 @@ omp hud --watch
 The `omp` CLI is a companion tool for local runtime features; the Copilot plugin works without it.
 Running `omp setup` performs the same non-destructive Copilot config merge as `/setup` (or `/omp:setup`).
 Use `omp hud --watch` when you want the local HUD daemon to keep refreshing session artifacts in the background.
+`omp` also performs a launch-time npm update check in interactive TTY sessions (throttled to once every 12 hours via
+`~/.omp/state/update-check.json`) and prompts before running `npm install -g oh-my-githubcopilot@latest`.
+Set `OMP_AUTO_UPDATE=0` (or `OMP_DISABLE_UPDATE_CHECK=true`) to disable the check.
 
 ### Optional: package the VS Code companion extension
 
@@ -159,7 +162,7 @@ OMP provides 23 specialized agents, each with Copilot-compatible frontmatter for
 
 ### Skills
 
-25 skills, each triggerable via slash command or keyword:
+39 skills, each triggerable via slash command or keyword:
 
 | Skill          | Trigger                | Purpose                                             |
 | -------------- | ---------------------- | --------------------------------------------------- |
@@ -174,7 +177,7 @@ OMP provides 23 specialized agents, each with Copilot-compatible frontmatter for
 | graphwiki      | `/omp:graphwiki`       | Query and maintain graphwiki knowledge              |
 | graph-provider | `/omp:graph-provider`  | Manage the active graph backend                     |
 | spending       | `/omp:spending`        | Track premium request usage                         |
-| ...            | ...                    | 25 total skills                                     |
+| ...            | ...                    | 39 total skills                                     |
 
 ## Repository Layout
 
@@ -182,7 +185,7 @@ OMP provides 23 specialized agents, each with Copilot-compatible frontmatter for
 .
 ├── AGENTS.md        # orchestration brain
 ├── agents/          # 23 Copilot-facing agent files
-├── skills/          # 25 skills
+├── skills/          # 39 skills
 ├── hooks/           # hook config + shell entrypoints
 ├── src/             # TypeScript implementation
 ├── dist/            # built runtime artifacts committed for plugin consumers

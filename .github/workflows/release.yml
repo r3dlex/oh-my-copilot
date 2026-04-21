@@ -196,17 +196,6 @@ jobs:
       - name: Pre-publish dry run (verify tarball contents)
         run: npm pack --dry-run
 
-      - name: Check npm token availability
-        id: check_npm_token
-        run: |
-          if [ -n "$NPM_TOKEN" ]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-          fi
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       # ── GitHub Packages (always, GITHUB_TOKEN) ──────────────────────────────
       - name: Setup Node for GitHub Packages
         uses: actions/setup-node@v4
@@ -232,7 +221,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ── npmjs.com (conditional on NPM_TOKEN) ────────────────────────────────
+      # ── npmjs.com (OIDC Trusted Publishing) ─────────────────────────────────
       - name: Setup Node for npmjs.com
         uses: actions/setup-node@v4
         with:
@@ -242,8 +231,6 @@ jobs:
       - name: Check if version already published on npmjs.com (stable idempotency)
         if: needs.build.outputs.release_type == 'stable' && !inputs.dry-run
         id: npm_check
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           PUBLISH_VERSION="${{ needs.build.outputs.publish_version }}"
           if npm view "oh-my-githubcopilot@${PUBLISH_VERSION}" version 2>/dev/null | grep -q "${PUBLISH_VERSION}"; then
@@ -254,20 +241,12 @@ jobs:
           fi
 
       - name: Publish to npmjs.com
-        if: ${{ steps.check_npm_token.outputs.available == 'true' && !inputs.dry-run && steps.npm_check.outputs.already_published != 'true' }}
+        if: ${{ !inputs.dry-run && steps.npm_check.outputs.already_published != 'true' }}
         run: npm publish --provenance --access public --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npmjs.com (dry run)
-        if: ${{ inputs.dry-run == true && steps.check_npm_token.outputs.available == 'true' }}
+        if: ${{ inputs.dry-run == true }}
         run: npm publish --dry-run --ignore-scripts --tag ${{ needs.build.outputs.npm_tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: npmjs.com publish skipped (no NPM_TOKEN)
-        if: ${{ steps.check_npm_token.outputs.available != 'true' }}
-        run: echo "NPM_TOKEN not configured — skipping npmjs.com publish. Package is available on GitHub Packages only."
 
   github-release:
     runs-on: ubuntu-latest

@@ -98,6 +98,22 @@ const KEYWORD_MAP: Record<string, string> = {
   "/omp:graph-provider": "graph-provider",
   "/spending": "spending",
   "/omp:spending": "spending",
+  "--consensus": "omp-plan",
+  "/omp:omp-doctor": "omp-doctor",
+  "/omp:ralplan": "ralplan",
+  "/omp:research": "research",
+  "doctor:": "doctor",
+  "/doctor": "doctor",
+  "/omp:doctor": "doctor",
+  "interview:": "interview",
+  "/interview": "interview",
+  "/omp:interview": "interview",
+  "notifications:": "notifications",
+  "/notifications": "notifications",
+  "/omp:notifications": "notifications",
+  "session:": "session",
+  "/session": "session",
+  "/omp:session": "session",
 };
 
 const KEYWORD_ENTRIES = Object.entries(KEYWORD_MAP).sort(([a], [b]) => b.length - a.length);

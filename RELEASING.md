@@ -144,6 +144,9 @@ npm run build
 npm pack --dry-run
 ```
 
+`omp` update prompts are TTY-only and already suppressed in CI/non-interactive runs. For manual smoke checks where you
+want deterministic output, set `OMP_AUTO_UPDATE=0` before invoking `omp`.
+
 If the optional `vscode-omp/` package exists, also verify the editor companion package from that directory:
 
 ```bash
