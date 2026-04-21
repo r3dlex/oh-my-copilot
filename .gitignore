@@ -4,7 +4,9 @@
 
 # OMP plugin state (local session data)
 .omp/
-.omc/
+.omc/logs/
+.omc/state/
+.omc/sessions/
 
 # Coverage reports
 coverage/
