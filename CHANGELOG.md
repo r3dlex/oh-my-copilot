@@ -4,7 +4,7 @@ All notable changes to **oh-my-githubcopilot** are documented here, ordered newe
 
 ---
 
-## [1.6.0] — 2026-04-21
+## oh-my-githubcopilot v1.6.0 — 2026-04-21
 
 ### Features
 
