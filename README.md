@@ -141,5 +141,5 @@ If omp saves you time, consider [sponsoring the project](https://github.com/spon
 
 <!-- v3-ai-sdlc-init:start -->
 ## AI SDLC v3
-This repo follows the v3 AI-SDLC layout. See `.ai/matrix.json`, `.memory/human-override/`, and `docs/architecture/adr/`. Modules at `r3dlex/skills/ai-sdlc-init/modules/`.
+This repo follows the v3 AI-SDLC layout (`topology_type: standalone`, depth 0). `AGENTS.md` is the single source of truth; `CLAUDE.md` and `GEMINI.md` are thin pointers (ADR-0007). Workflow: [`.ai/workflows/repo-workflow.md`](.ai/workflows/repo-workflow.md) and [`.ai/workflows/repo-workflow.json`](.ai/workflows/repo-workflow.json). See `.ai/matrix.json`, `.memory/human-override/`, and `docs/architecture/adr/`. Modules at `r3dlex/skills/init-ai-repo/modules/`.
 <!-- v3-ai-sdlc-init:end -->

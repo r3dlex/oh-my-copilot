@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-06-28T00:00:00Z",
+  "repo_id": "omp-root",
+  "repo_name": "oh-my-githubcopilot",
+  "remote": "git@github.com:r3dlex/oh-my-githubcopilot.git",
+  "description": "Multi-agent orchestration for GitHub Copilot CLI. 19 agents, 59 skills, parallel execution, HUD, PSM, SWE-bench.",
+  "language": "TypeScript",
+  "runtime": "node",
+  "node_version_minimum": "22",
+  "package_manager": "npm",
+  "workspace_layout": "single-package",
+  "workspace_packages": [],
+  "topology": {
+    "topology_type": "standalone",
+    "current_depth": 0,
+    "max_allowed_depth": 0,
+    "sync_strategy": "physical-copy"
+  },
+  "ci": {
+    "provider": "GitHub Actions",
+    "workflow_files": [
+      ".github/workflows/ci.yml",
+      ".github/workflows/ci-prek.yml",
+      ".github/workflows/release.yml"
+    ],
+    "pre_commit": "prek",
+    "pre_commit_config": "prek.toml"
+  },
+  "scripts": {
+    "test": "npm test",
+    "build": "npm run build",
+    "typecheck": "npm run typecheck",
+    "lint": "npm run lint",
+    "coverage": "npm run test:coverage"
+  },
+  "test_framework": "vitest",
+  "build_tool": "esbuild",
+  "tracker": {
+    "host": "github",
+    "repo": "r3dlex/oh-my-githubcopilot",
+    "issues_url": "https://github.com/r3dlex/oh-my-githubcopilot/issues"
+  },
+  "branch_policy": {
+    "protected_branch": "main",
+    "delivery": "PR-only",
+    "auto_merge": "squash (when CI + approval green)"
+  },
+  "conventions": {
+    "adr_dir": "docs/architecture/adr/",
+    "spec_dir": "docs/specifications/",
+    "plugin_source": "src/",
+    "dist_generated": true,
+    "entry_scripts": ["bin/omp.mjs"]
+  },
+  "archgate_rules": ".rules.ts",
+  "release_config": "release.json",
+  "existing_governance": {
+    "ai_rules": [".ai/rules/security.md", ".ai/rules/technical-bounds.md"],
+    "ai_skills": [".ai/skills/git-ops.json", ".ai/skills/workspace-sync.json"],
+    "ai_system_prompts": [
+      ".ai/system-prompts/architect.md",
+      ".ai/system-prompts/developer.md",
+      ".ai/system-prompts/qa-engineer.md"
+    ],
+    "memory_layer": ".memory/"
+  }
+}
