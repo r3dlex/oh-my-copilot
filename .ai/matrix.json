@@ -16,6 +16,10 @@
     "drift_detected": false,
     "last_drift_report": ".ai/drift/last-drift.json"
   },
+  "migration": {
+    "kind": "additive-v3-upgrade",
+    "manifest": ".ai/drift/migration-manifest.json"
+  },
   "memory": {
     "external_integration": false
   }

@@ -49,5 +49,5 @@ This repository uses the AI SDLC methodology. Before starting work:
 
 <!-- v3-ai-sdlc-init:start -->
 ## v3
-See `.ai/matrix.json` and `AGENTS.md` for the operating contract.
+See [AGENTS.md](AGENTS.md) for the agent-facing operating contract and workflow. `AGENTS.md` is the single source of truth; this file is a thin pointer (ADR-0004).
 <!-- v3-ai-sdlc-init:end -->
