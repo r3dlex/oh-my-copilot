@@ -1,4 +1,4 @@
-# ADR 0005: MCP/A2A open standards and an observability harness surface
+# ADR 0008: MCP/A2A open standards and an observability harness surface
 
 ## Status
 Accepted.
@@ -32,7 +32,7 @@ static-vs-dynamic context boundary as a reviewed, versioned decision.
 
 ## Consequences
 - Agent drift, cost, and trajectory become auditable; supports the model-routing
-  audit defined in ADR-0006.
+  audit defined in ADR-0006 (v3 upgrade).
 - Choosing MCP/A2A now preserves multi-vendor/framework optionality and avoids
   re-platforming later.
 - The static/dynamic context boundary becomes a first-class architectural decision

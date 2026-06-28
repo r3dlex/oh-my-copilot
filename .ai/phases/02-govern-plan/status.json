@@ -13,6 +13,6 @@
     "CONTRIBUTING.md",
     "docs/specifications/ACTIVE/"
   ],
-  "evidence": "AGENTS.md refreshed as single source of truth with Harness Map and workflow links; CLAUDE.md/GEMINI.md are thin pointers (ADR-0004).",
+  "evidence": "AGENTS.md refreshed as single source of truth with Harness Map and workflow links; CLAUDE.md/GEMINI.md are thin pointers (ADR-0007).",
   "next_actions": []
 }

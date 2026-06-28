@@ -33,12 +33,12 @@
     {"path": ".ai/handoff/init-ai-repo-handoff.md", "action": "copy", "note": "Handoff index."},
     {"path": ".ai/work-intake/README.md", "action": "copy", "note": "Local work-intake fallback surface."},
     {"path": ".ai/validation/report.md", "action": "copy", "note": "Validation report."},
-    {"path": "docs/architecture/adr/0004-agents-md-single-source-codex-parity.md", "action": "copy", "note": "ADR: AGENTS.md single source of truth."},
-    {"path": "docs/architecture/adr/0005-mcp-a2a-and-observability-harness.md", "action": "copy", "note": "ADR: MCP/A2A and observability harness."},
+    {"path": "docs/architecture/adr/0007-agents-md-single-source-codex-parity.md", "action": "copy", "note": "ADR: AGENTS.md single source of truth."},
+    {"path": "docs/architecture/adr/0008-mcp-a2a-and-observability-harness.md", "action": "copy", "note": "ADR: MCP/A2A and observability harness."},
     {"path": "docs/architecture/adr/0006-init-ai-repo-v3-upgrade.md", "action": "copy", "note": "ADR for the v3 governance upgrade."},
     {"path": "GEMINI.md", "action": "copy", "note": "Thin pointer to AGENTS.md (created)."},
     {"path": "AGENTS.md", "action": "supersede", "note": "Refreshed v3 block as single source of truth with Harness Map and workflow links; prior content preserved under existing markers."},
-    {"path": "CLAUDE.md", "action": "supersede", "note": "Refreshed v3 block as thin pointer to AGENTS.md (ADR-0004); prior content preserved under existing markers."},
+    {"path": "CLAUDE.md", "action": "supersede", "note": "Collapsed to genuine thin pointer to AGENTS.md (ADR-0007); content-bearing sections already present in AGENTS.md."},
     {"path": ".ai/rules/", "action": "deprecate", "note": "NOT deprecated — preserved unchanged. Listed to record that prior governance content is retained additively."}
   ],
   "preserved": [

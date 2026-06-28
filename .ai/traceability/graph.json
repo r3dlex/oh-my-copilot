@@ -30,7 +30,7 @@
       "title": "AGENTS.md single source of truth; thin CLAUDE.md/GEMINI.md pointers",
       "status": "active",
       "repo_id": "omp-root",
-      "path": "docs/architecture/adr/0004-agents-md-single-source-codex-parity.md",
+      "path": "docs/architecture/adr/0007-agents-md-single-source-codex-parity.md",
       "backlinks": [
         "adr:omp-root:governance-v3-upgrade"
       ]
@@ -41,7 +41,7 @@
       "title": "MCP/A2A open standards and observability harness surface",
       "status": "active",
       "repo_id": "omp-root",
-      "path": "docs/architecture/adr/0005-mcp-a2a-and-observability-harness.md",
+      "path": "docs/architecture/adr/0008-mcp-a2a-and-observability-harness.md",
       "backlinks": [
         "adr:omp-root:governance-v3-upgrade"
       ]

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "generated_by": "init-ai-repo",
-  "adr": "ADR-0005",
+  "adr": "ADR-0008",
   "description": "MCP-server registry stub. Offline/deterministic: declared servers are stubs; init-ai-repo resolves no live endpoint and makes no network call.",
   "servers": [
     {

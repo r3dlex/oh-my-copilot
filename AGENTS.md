@@ -177,7 +177,7 @@ Before starting work on an issue:
 <!-- v3-ai-sdlc-init:start -->
 ## AI SDLC v3
 
-This repo follows the v3 AI-SDLC layout (`topology_type: standalone`, depth 0). It is the single source of truth for the agent operating contract; `CLAUDE.md` and `GEMINI.md` are thin pointers to this file (ADR-0004).
+This repo follows the v3 AI-SDLC layout (`topology_type: standalone`, depth 0). It is the single source of truth for the agent operating contract; `CLAUDE.md` and `GEMINI.md` are thin pointers to this file (ADR-0007).
 
 ### Workflow
 
@@ -189,7 +189,7 @@ Continue through the mandatory phases and record status in `.ai/phases/<phase>/s
 
 ### Harness Map
 
-The six context types this harness assembles, and where each lives (ADR-0005):
+The six context types this harness assembles, and where each lives (ADR-0008):
 
 | Context type | Canonical source | Static or dynamic |
 | --- | --- | --- |
@@ -200,5 +200,5 @@ The six context types this harness assembles, and where each lives (ADR-0005):
 | `Tools` | `.ai/skills/`, `.ai/mcp/registry.json` | Dynamic |
 | `Guardrails` | `.ai/rules/security.md`, `.ai/rules/technical-bounds.md`, `.ai/policies/` | Static |
 
-**Static-vs-dynamic boundary.** Static context is fixed at the start of a task and is reviewed and versioned in-repo; dynamic context is assembled per-run (memory written by local agents, tool/MCP results resolved at call time). This boundary is a reviewed, versioned decision (ADR-0005); moving a context type across it requires an ADR update.
+**Static-vs-dynamic boundary.** Static context is fixed at the start of a task and is reviewed and versioned in-repo; dynamic context is assembled per-run (memory written by local agents, tool/MCP results resolved at call time). This boundary is a reviewed, versioned decision (ADR-0008); moving a context type across it requires an ADR update.
 <!-- v3-ai-sdlc-init:end -->

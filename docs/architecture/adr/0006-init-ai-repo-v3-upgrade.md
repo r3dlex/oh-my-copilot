@@ -15,8 +15,8 @@ AI-failure-mode review checklist, command surfaces, and phased status files.
 Additively generate the missing v3 governance layers, adapted to a standalone
 node CLI tool (`topology_type: standalone`, depth 0). Refresh `AGENTS.md` as the
 single source of truth (with a Harness Map and workflow links) and make
-`CLAUDE.md` and `GEMINI.md` thin pointers to `AGENTS.md` (ADR-0004). Promote
-MCP/A2A and observability to real surfaces (ADR-0005).
+`CLAUDE.md` and `GEMINI.md` thin pointers to `AGENTS.md` (ADR-0007). Promote
+MCP/A2A and observability to real surfaces (ADR-0008).
 
 Skills-catalog-specific artifacts are intentionally excluded — this repo is a
 GitHub Copilot CLI plugin, not a skills catalog. Cascade is a no-op for

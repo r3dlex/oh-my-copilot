@@ -1,4 +1,4 @@
-# ADR 0004: AGENTS.md as single source of truth; CLAUDE.md/GEMINI.md as thin pointers
+# ADR 0007: AGENTS.md as single source of truth; CLAUDE.md/GEMINI.md as thin pointers
 
 ## Status
 Accepted.
