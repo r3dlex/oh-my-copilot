@@ -3,9 +3,17 @@
  * Session lifecycle management.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, rmSync } from "fs";
+import { rmSync } from "fs";
 import { homedir } from "os";
-import { join, dirname } from "path";
+import { join } from "path";
+import {
+  ensureDir,
+  getSessionIndexPath,
+  getSessionsDir,
+  readJsonSafe,
+  writeFileAtomic,
+  writeJsonAtomic,
+} from "../utils/file-system.mts";
 
 export interface SessionRecord {
   id: string;
@@ -17,24 +25,12 @@ export interface SessionRecord {
   status: "active" | "archived" | "destroyed";
 }
 
-const SESSIONS_DIR = () => join(homedir(), ".omp", "state", "sessions");
-const SESSIONS_INDEX = () => join(homedir(), ".omp", "state", "sessions.json");
-
-function ensureDir(path: string): void {
-  mkdirSync(path, { recursive: true });
-}
-
 function readSessionsIndex(): SessionRecord[] {
-  try {
-    return JSON.parse(readFileSync(SESSIONS_INDEX(), "utf-8"));
-  } catch {
-    return [];
-  }
+  return readJsonSafe<SessionRecord[]>(getSessionIndexPath(), []);
 }
 
 function writeSessionsIndex(sessions: SessionRecord[]): void {
-  ensureDir(dirname(SESSIONS_INDEX()));
-  writeFileSync(SESSIONS_INDEX(), JSON.stringify(sessions, null, 2), "utf-8");
+  writeJsonAtomic(getSessionIndexPath(), sessions);
 }
 
 /**
@@ -60,9 +56,9 @@ export function createSession(name: string): SessionRecord {
   writeSessionsIndex(sessions);
 
   // Create session state directory
-  const sessionDir = join(SESSIONS_DIR(), id);
+  const sessionDir = join(getSessionsDir(), id);
   ensureDir(sessionDir);
-  writeFileSync(join(sessionDir, "session.json"), JSON.stringify({ id, name, branch, createdAt: record.createdAt }), "utf-8");
+  writeFileAtomic(join(sessionDir, "session.json"), JSON.stringify({ id, name, branch, createdAt: record.createdAt }));
 
   return record;
 }
@@ -100,7 +96,7 @@ export function destroySession(name: string, removeWorktree = false): boolean {
   writeSessionsIndex(sessions);
 
   // Remove session state directory
-  const sessionDir = join(SESSIONS_DIR(), session.id);
+  const sessionDir = join(getSessionsDir(), session.id);
   try {
     rmSync(sessionDir, { recursive: true, force: true });
   } catch {

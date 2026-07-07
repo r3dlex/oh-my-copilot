@@ -9,6 +9,51 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// src/utils/file-system.mts
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
+import { homedir as homedir2 } from "os";
+import { dirname as dirname2, join as join2 } from "path";
+function ensureDir(dirPath) {
+  mkdirSync(dirPath, { recursive: true });
+}
+function readJsonSafe(path, fallback, options) {
+  let raw;
+  try {
+    raw = readFileSync(path, "utf-8");
+  } catch (err) {
+    if (err.code !== "ENOENT") options?.onMalformed?.(path, err);
+    return fallback;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    options?.onMalformed?.(path, err);
+    return fallback;
+  }
+}
+function writeFileAtomic(path, content, mode) {
+  ensureDir(dirname2(path));
+  const tempPath = `${path}.tmp`;
+  writeFileSync(tempPath, content, mode === void 0 ? "utf-8" : { encoding: "utf-8", mode });
+  renameSync(tempPath, path);
+}
+function getHudPaths(home = process.env["HOME"] || homedir2()) {
+  const ompDir = join2(home, ".omp");
+  const hudDir = join2(ompDir, "hud");
+  return {
+    legacyLinePath: join2(ompDir, "hud.line"),
+    hudDir,
+    statusJsonPath: join2(hudDir, "status.json"),
+    displayPath: join2(hudDir, "display.txt"),
+    tmuxSegmentPath: join2(hudDir, "tmux-segment.sh")
+  };
+}
+var init_file_system = __esm({
+  "src/utils/file-system.mts"() {
+    "use strict";
+  }
+});
+
 // src/hud/renderer.mts
 function formatAge(startedAt) {
   const elapsed = Date.now() - startedAt;
@@ -72,30 +117,8 @@ var init_renderer = __esm({
 });
 
 // src/hud/statusline.mts
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
-import { homedir as homedir2 } from "os";
-import { dirname as dirname2, join as join2 } from "path";
+import { readFileSync as readFileSync2 } from "fs";
 import { fileURLToPath } from "url";
-function getStatuslinePaths(home = process.env["HOME"] || homedir2()) {
-  const ompDir = join2(home, ".omp");
-  const hudDir = join2(ompDir, "hud");
-  return {
-    legacyLinePath: join2(ompDir, "hud.line"),
-    hudDir,
-    statusJsonPath: join2(hudDir, "status.json"),
-    displayPath: join2(hudDir, "display.txt"),
-    tmuxSegmentPath: join2(hudDir, "tmux-segment.sh")
-  };
-}
-function ensureParent(filePath) {
-  mkdirSync(dirname2(filePath), { recursive: true });
-}
-function writeAtomic(filePath, content, mode) {
-  ensureParent(filePath);
-  const tempPath = `${filePath}.tmp`;
-  writeFileSync(tempPath, content, mode === void 0 ? "utf-8" : { encoding: "utf-8", mode });
-  renameSync(tempPath, filePath);
-}
 function normalizeStringArray(value) {
   if (!Array.isArray(value)) return [];
   return value.filter((item) => typeof item === "string");
@@ -179,43 +202,44 @@ function writeHudArtifacts(snapshot, paths = getStatuslinePaths()) {
   const line = renderPlain(state);
   const serializedState = `${JSON.stringify(serializeHudState(state), null, 2)}
 `;
-  writeAtomic(paths.statusJsonPath, serializedState);
-  writeAtomic(paths.displayPath, `${line}
+  writeFileAtomic(paths.statusJsonPath, serializedState);
+  writeFileAtomic(paths.displayPath, `${line}
 `);
-  writeAtomic(paths.tmuxSegmentPath, `${line}
+  writeFileAtomic(paths.tmuxSegmentPath, `${line}
 `, 493);
-  writeAtomic(paths.legacyLinePath, `${line}
+  writeFileAtomic(paths.legacyLinePath, `${line}
 `);
   return { line, state, paths };
 }
 function readStatusline(paths = getStatuslinePaths()) {
-  try {
-    const parsed = JSON.parse(readFileSync(paths.statusJsonPath, "utf-8"));
+  const parsed = readJsonSafe(paths.statusJsonPath, null);
+  if (parsed !== null) {
     const state = deserializeHudState(parsed);
     if (state) return renderPlain(state);
-  } catch {
   }
   try {
-    const line = readFileSync(paths.displayPath, "utf-8").trim();
+    const line = readFileSync2(paths.displayPath, "utf-8").trim();
     if (line) return line;
   } catch {
   }
   try {
-    const line = readFileSync(paths.legacyLinePath, "utf-8").trim();
+    const line = readFileSync2(paths.legacyLinePath, "utf-8").trim();
     if (line) return line;
   } catch {
   }
   return DEFAULT_STATUSLINE;
 }
-var DEFAULT_VERSION, DEFAULT_STATUSLINE, DEFAULT_TOKEN_BUDGET, DEFAULT_PREMIUM_REQUESTS_TOTAL;
+var DEFAULT_VERSION, DEFAULT_STATUSLINE, DEFAULT_TOKEN_BUDGET, DEFAULT_PREMIUM_REQUESTS_TOTAL, getStatuslinePaths;
 var init_statusline = __esm({
   "src/hud/statusline.mts"() {
     "use strict";
+    init_file_system();
     init_renderer();
     DEFAULT_VERSION = "0.0.0";
     DEFAULT_STATUSLINE = "OMP | hud: no active session";
     DEFAULT_TOKEN_BUDGET = 2e5;
     DEFAULT_PREMIUM_REQUESTS_TOTAL = 1500;
+    getStatuslinePaths = getHudPaths;
     if (process.argv[1] === fileURLToPath(import.meta.url) && (process.argv[1].endsWith("omp-statusline.mjs") || process.argv[1].endsWith("statusline.mts"))) {
       console.log(readStatusline());
     }
@@ -227,12 +251,12 @@ var watch_exports = {};
 __export(watch_exports, {
   runHudWatch: () => runHudWatch
 });
-import { readFileSync as readFileSync2 } from "fs";
+import { readFileSync as readFileSync3 } from "fs";
 import { homedir as homedir3 } from "os";
 import { join as join3 } from "path";
 function readSnapshot() {
   try {
-    const raw = readFileSync2(STATE_PATH, "utf-8");
+    const raw = readFileSync3(STATE_PATH, "utf-8");
     const parsed = JSON.parse(raw);
     return parsed;
   } catch {
@@ -347,7 +371,7 @@ __export(doctor_exports, {
   scanProjectForStaleAgents: () => scanProjectForStaleAgents,
   scanTextForStaleAgents: () => scanTextForStaleAgents
 });
-import { existsSync, readFileSync as readFileSync3, readdirSync, statSync } from "fs";
+import { existsSync, readFileSync as readFileSync4, readdirSync, statSync } from "fs";
 import { join as join5, relative } from "path";
 function scanTextForStaleAgents(text, file) {
   const warnings = [];
@@ -403,7 +427,7 @@ function scanProjectForStaleAgents(cwd) {
   const warnings = [];
   for (const target of targets) {
     try {
-      const text = readFileSync3(target, "utf-8");
+      const text = readFileSync4(target, "utf-8");
       warnings.push(...scanTextForStaleAgents(text, relative(cwd, target)));
     } catch {
     }
@@ -1409,11 +1433,11 @@ function printUsage(stderr = false) {
 }
 async function printHud() {
   try {
-    const { readFileSync: readFileSync4 } = await import("fs");
+    const { readFileSync: readFileSync5 } = await import("fs");
     const { join: join7 } = await import("path");
     const { homedir: homedir6 } = await import("os");
     const hudPath = join7(homedir6(), ".omp", "hud.line");
-    const line = readFileSync4(hudPath, "utf-8").trim();
+    const line = readFileSync5(hudPath, "utf-8").trim();
     console.log(line);
   } catch {
     console.log(`OMP v${PKG_VERSION} | hud: no active session`);
@@ -1476,14 +1500,14 @@ Total: ${SKILL_REGISTRY2.length} skills`);
 }
 async function runUltragoal(args) {
   try {
-    const { mkdirSync: mkdirSync3, readFileSync: readFileSync4, writeFileSync: writeFileSync2, existsSync: existsSync2 } = await import("fs");
+    const { mkdirSync: mkdirSync3, readFileSync: readFileSync5, writeFileSync: writeFileSync2, existsSync: existsSync2 } = await import("fs");
     const { join: join7 } = await import("path");
     const goalDir = join7(process.cwd(), ".omp", "ultragoal");
     const goalsPath = join7(goalDir, "goals.json");
     mkdirSync3(goalDir, { recursive: true });
     let goals = [];
     if (existsSync2(goalsPath)) {
-      const parsed = JSON.parse(readFileSync4(goalsPath, "utf-8"));
+      const parsed = JSON.parse(readFileSync5(goalsPath, "utf-8"));
       if (Array.isArray(parsed)) {
         goals = parsed;
       } else {
@@ -1567,7 +1591,7 @@ ${text}
 }
 async function runWriterMemory(args) {
   try {
-    const { mkdirSync: mkdirSync3, readFileSync: readFileSync4, appendFileSync: appendFileSync2, existsSync: existsSync2 } = await import("fs");
+    const { mkdirSync: mkdirSync3, readFileSync: readFileSync5, appendFileSync: appendFileSync2, existsSync: existsSync2 } = await import("fs");
     const { join: join7, dirname: dirname4 } = await import("path");
     const filePath = join7(process.cwd(), ".omp", "writer-memory.md");
     mkdirSync3(dirname4(filePath), { recursive: true });
@@ -1576,7 +1600,7 @@ async function runWriterMemory(args) {
         console.log("OMP Writer Memory: no style notes found. Use: omp writer-memory <style-note>");
         return;
       }
-      const content = readFileSync4(filePath, "utf-8");
+      const content = readFileSync5(filePath, "utf-8");
       console.log(content);
       return;
     }

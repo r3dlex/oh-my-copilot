@@ -13,6 +13,7 @@ vi.mock("fs", () => ({
   mkdirSync: vi.fn(),
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
+  renameSync: vi.fn(),
 }));
 
 vi.mock("os", () => ({

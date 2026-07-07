@@ -3,20 +3,53 @@ import { readFileSync as readFileSync2, writeFileSync as writeFileSync2, mkdirSy
 import { homedir as homedir3 } from "os";
 import { join as join3 } from "path";
 
-// src/spending/tracker.mts
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+// src/utils/file-system.mts
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
 import { homedir } from "os";
-import { join, dirname } from "path";
-var SPENDING_PATH = join(homedir(), ".omp", "state", "spending-monthly.json");
+import { dirname, join } from "path";
+function ensureDir(dirPath) {
+  mkdirSync(dirPath, { recursive: true });
+}
+function readJsonSafe(path, fallback, options) {
+  let raw;
+  try {
+    raw = readFileSync(path, "utf-8");
+  } catch (err) {
+    if (err.code !== "ENOENT") options?.onMalformed?.(path, err);
+    return fallback;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    options?.onMalformed?.(path, err);
+    return fallback;
+  }
+}
+function writeFileAtomic(path, content, mode) {
+  ensureDir(dirname(path));
+  const tempPath = `${path}.tmp`;
+  writeFileSync(tempPath, content, mode === void 0 ? "utf-8" : { encoding: "utf-8", mode });
+  renameSync(tempPath, path);
+}
+function writeJsonAtomic(path, data) {
+  writeFileAtomic(path, JSON.stringify(data, null, 2));
+}
+function getStateDir() {
+  return join(homedir(), ".omp", "state");
+}
+function getSpendingPath() {
+  return join(getStateDir(), "spending-monthly.json");
+}
+
+// src/spending/tracker.mts
+var SPENDING_PATH = getSpendingPath();
 function currentMonth() {
   const now = /* @__PURE__ */ new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 function loadSpending(sessionId) {
-  let raw;
-  try {
-    raw = JSON.parse(readFileSync(SPENDING_PATH, "utf-8"));
-  } catch {
+  const raw = readJsonSafe(SPENDING_PATH, null);
+  if (!raw) {
     return {
       version: 1,
       sessionId,
@@ -48,8 +81,7 @@ function loadSpending(sessionId) {
 }
 function saveSpending(state) {
   try {
-    mkdirSync(dirname(SPENDING_PATH), { recursive: true });
-    writeFileSync(SPENDING_PATH, JSON.stringify(state, null, 2), "utf-8");
+    writeJsonAtomic(SPENDING_PATH, state);
   } catch (e) {
     console.warn(`[OMP] spending: failed to save state: ${e}`);
   }
@@ -152,7 +184,7 @@ function getStatePath(sessionId) {
   }
   return join3(base, "session.json");
 }
-function ensureDir(path) {
+function ensureDir2(path) {
   mkdirSync3(path.substring(0, path.lastIndexOf("/")), { recursive: true });
 }
 function processHook(input) {
@@ -204,7 +236,7 @@ function processHook(input) {
       }
     }
     try {
-      ensureDir(statePath);
+      ensureDir2(statePath);
       writeFileSync2(
         statePath,
         JSON.stringify({ ...state, warnings_issued: Array.from(state.warnings_issued) }),

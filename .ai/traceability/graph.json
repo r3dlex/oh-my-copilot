@@ -100,6 +100,26 @@
       "backlinks": [
         "validation:omp-root:traceability-report"
       ]
+    },
+    {
+      "id": "plan:omp-root:northstar-file-system-seam",
+      "type": "plan",
+      "title": "northstar sliced plan: file-system-seam",
+      "status": "active",
+      "repo_id": "omp-root",
+      "path": ".ai/handoff/northstar-file-system-seam.md",
+      "backlinks": []
+    },
+    {
+      "id": "handoff:omp-root:northstar-file-system-seam",
+      "type": "handoff",
+      "title": "northstar A->B handoff: file-system-seam",
+      "status": "active",
+      "repo_id": "omp-root",
+      "path": ".ai/handoff/northstar-file-system-seam.md",
+      "backlinks": [
+        "plan:omp-root:northstar-file-system-seam"
+      ]
     }
   ],
   "edges": [
@@ -158,6 +178,13 @@
       "relation": "summarized-by",
       "created_by": "init-ai-repo",
       "evidence_path": ".ai/traceability/index.md"
+    },
+    {
+      "source": "plan:omp-root:northstar-file-system-seam",
+      "target": "handoff:omp-root:northstar-file-system-seam",
+      "relation": "summarized-by",
+      "created_by": "northstar",
+      "evidence_path": ".ai/handoff/northstar-file-system-seam.md"
     }
   ],
   "coverage": {

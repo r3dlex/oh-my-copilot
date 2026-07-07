@@ -5,10 +5,9 @@
  * can share the same rendering and fallback behavior.
  */
 
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
-import { homedir } from "os";
-import { dirname, join } from "path";
+import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
+import { getHudPaths, readJsonSafe, writeFileAtomic, type HudPaths } from "../utils/file-system.mts";
 import { renderPlain, type HudState, type HudStatus } from "./renderer.mts";
 
 const DEFAULT_VERSION = "0.0.0";
@@ -17,13 +16,7 @@ export const DEFAULT_STATUSLINE = "OMP | hud: no active session";
 const DEFAULT_TOKEN_BUDGET = 200_000;
 const DEFAULT_PREMIUM_REQUESTS_TOTAL = 1500;
 
-export interface StatuslinePaths {
-  legacyLinePath: string;
-  hudDir: string;
-  statusJsonPath: string;
-  displayPath: string;
-  tmuxSegmentPath: string;
-}
+export type StatuslinePaths = HudPaths;
 
 export interface HudSnapshot {
   version?: string;
@@ -51,28 +44,8 @@ interface SerializedHudState extends Omit<HudState, "toolsUsed" | "skillsUsed"> 
   skillsUsed: string[];
 }
 
-export function getStatuslinePaths(home = process.env["HOME"] || homedir()): StatuslinePaths {
-  const ompDir = join(home, ".omp");
-  const hudDir = join(ompDir, "hud");
-  return {
-    legacyLinePath: join(ompDir, "hud.line"),
-    hudDir,
-    statusJsonPath: join(hudDir, "status.json"),
-    displayPath: join(hudDir, "display.txt"),
-    tmuxSegmentPath: join(hudDir, "tmux-segment.sh"),
-  };
-}
-
-function ensureParent(filePath: string): void {
-  mkdirSync(dirname(filePath), { recursive: true });
-}
-
-function writeAtomic(filePath: string, content: string, mode?: number): void {
-  ensureParent(filePath);
-  const tempPath = `${filePath}.tmp`;
-  writeFileSync(tempPath, content, mode === undefined ? "utf-8" : { encoding: "utf-8", mode });
-  renameSync(tempPath, filePath);
-}
+/** Path resolution lives in the file-system seam; re-exported here for consumers. */
+export const getStatuslinePaths = getHudPaths;
 
 function normalizeStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -163,23 +136,22 @@ export function writeHudArtifacts(snapshot: HudSnapshot, paths = getStatuslinePa
   const line = renderPlain(state);
   const serializedState = `${JSON.stringify(serializeHudState(state), null, 2)}\n`;
 
-  writeAtomic(paths.statusJsonPath, serializedState);
-  writeAtomic(paths.displayPath, `${line}\n`);
-  writeAtomic(paths.tmuxSegmentPath, `${line}\n`, 0o755);
-  writeAtomic(paths.legacyLinePath, `${line}\n`);
+  writeFileAtomic(paths.statusJsonPath, serializedState);
+  writeFileAtomic(paths.displayPath, `${line}\n`);
+  writeFileAtomic(paths.tmuxSegmentPath, `${line}\n`, 0o755);
+  writeFileAtomic(paths.legacyLinePath, `${line}\n`);
 
   return { line, state, paths };
 }
 
 export function readStatusline(paths = getStatuslinePaths()): string {
   // Try live render from status.json — formatAge runs at call time, not hook-fire time
-  try {
-    const parsed = JSON.parse(readFileSync(paths.statusJsonPath, "utf-8"));
+  const parsed = readJsonSafe<unknown>(paths.statusJsonPath, null);
+  if (parsed !== null) {
     const state = deserializeHudState(parsed);
     if (state) return renderPlain(state);
-  } catch {
-    // Fall through to cached display string.
   }
+  // Otherwise fall through to cached display string.
 
   // Fallback: pre-rendered cached string (written by hud-emitter; used by tmux consumers)
   try {

@@ -5,26 +5,14 @@
  * Missing file → return {}
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { join, dirname } from "path";
-import { homedir } from "os";
+import { getConfigPath, readJsonSafe, writeJsonAtomic, type ConfigScope } from "./file-system.mts";
 
-export type ConfigScope = "local" | "global";
-
-function getConfigPath(scope: ConfigScope): string {
-  if (scope === "global") return join(homedir(), ".omp", "config.json");
-  return join(process.cwd(), ".omp", "config.json");
-}
+export type { ConfigScope } from "./file-system.mts";
 
 function readConfigFile<T>(path: string): Partial<T> {
-  try {
-    const raw = readFileSync(path, "utf-8");
-    return JSON.parse(raw) as Partial<T>;
-  } catch (err: unknown) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return {};
-    console.warn(`[OMP] config: malformed JSON at ${path}, using defaults`);
-    return {};
-  }
+  return readJsonSafe<Partial<T>>(path, {}, {
+    onMalformed: () => console.warn(`[OMP] config: malformed JSON at ${path}, using defaults`),
+  });
 }
 
 export function loadConfig<T>(_name: string, scope?: ConfigScope): Partial<T> {
@@ -40,6 +28,5 @@ export function writeConfig<T>(_name: string, scope: ConfigScope, patch: Partial
   const path = getConfigPath(scope);
   const existing = readConfigFile<T>(path);
   const merged = { ...existing, ...patch };
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, JSON.stringify(merged, null, 2), "utf-8");
+  writeJsonAtomic(path, merged);
 }
