@@ -3,45 +3,37 @@
  * Session state persistence via SQLite with JSON file fallback.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { homedir } from "os";
-import { dirname, join } from "path";
+import { dirname } from "path";
+import {
+  ensureDir,
+  getPsmDbPath,
+  getSessionIndexPath,
+  readJsonSafe,
+  writeJsonAtomic,
+} from "../utils/file-system.mts";
 import { SqliteConstructor as sqlite } from "./db-loader.mts";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _db: any | null = null;
 
-function ensureDir(filePath: string): void {
-  const dir = dirname(filePath);
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getDb(): any | null {
   if (!sqlite) return null;
   if (!_db) {
-    const dbPath = join(homedir(), ".omp", "state", "omp.db");
-    ensureDir(dbPath);
+    const dbPath = getPsmDbPath();
+    ensureDir(dirname(dbPath));
     _db = new sqlite(dbPath);
     _db.pragma("journal_mode = WAL");
   }
   return _db;
 }
 
-const jsonPath = join(homedir(), ".omp", "state", "sessions.json");
-
 function readJsonSessions(): SessionState[] {
-  try {
-    if (!existsSync(jsonPath)) return [];
-    return JSON.parse(readFileSync(jsonPath, "utf-8")) as SessionState[];
-  } catch {
-    return [];
-  }
+  return readJsonSafe<SessionState[]>(getSessionIndexPath(), []);
 }
 
 function writeJsonSessions(sessions: SessionState[]): void {
-  ensureDir(jsonPath);
-  writeFileSync(jsonPath, JSON.stringify(sessions, null, 2), "utf-8");
+  writeJsonAtomic(getSessionIndexPath(), sessions);
 }
 
 export interface SessionState {

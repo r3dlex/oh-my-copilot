@@ -6,12 +6,10 @@
  * // v1.1 known limitation: no /omp:spending reset command. To reset monthly counter manually: rm ~/.omp/state/spending-monthly.json
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { homedir } from "os";
-import { join, dirname } from "path";
+import { getSpendingPath, readJsonSafe, writeJsonAtomic } from "../utils/file-system.mts";
 import type { SpendingState } from "./types.mjs";
 
-const SPENDING_PATH = join(homedir(), ".omp", "state", "spending-monthly.json");
+const SPENDING_PATH = getSpendingPath();
 
 function currentMonth(): string {
   const now = new Date();
@@ -19,10 +17,8 @@ function currentMonth(): string {
 }
 
 export function loadSpending(sessionId: string): SpendingState {
-  let raw: SpendingState;
-  try {
-    raw = JSON.parse(readFileSync(SPENDING_PATH, "utf-8")) as SpendingState;
-  } catch {
+  const raw = readJsonSafe<SpendingState | null>(SPENDING_PATH, null);
+  if (!raw) {
     // Missing or malformed file — start fresh
     return {
       version: 1,
@@ -62,8 +58,7 @@ export function loadSpending(sessionId: string): SpendingState {
 
 export function saveSpending(state: SpendingState): void {
   try {
-    mkdirSync(dirname(SPENDING_PATH), { recursive: true });
-    writeFileSync(SPENDING_PATH, JSON.stringify(state, null, 2), "utf-8");
+    writeJsonAtomic(SPENDING_PATH, state);
   } catch (e) {
     console.warn(`[OMP] spending: failed to save state: ${e}`);
   }

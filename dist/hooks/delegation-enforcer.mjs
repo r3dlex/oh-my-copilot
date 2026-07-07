@@ -1,13 +1,36 @@
 // src/hooks/delegation-enforcer.mts
-import { readFileSync } from "fs";
-import { homedir as homedir2 } from "os";
-import { join as join2 } from "path";
+import { join as join3 } from "path";
+
+// src/utils/file-system.mts
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
+import { homedir } from "os";
+import { dirname, join } from "path";
+function readJsonSafe(path, fallback, options) {
+  let raw;
+  try {
+    raw = readFileSync(path, "utf-8");
+  } catch (err) {
+    if (err.code !== "ENOENT") options?.onMalformed?.(path, err);
+    return fallback;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    options?.onMalformed?.(path, err);
+    return fallback;
+  }
+}
+function getStateDir() {
+  return join(homedir(), ".omp", "state");
+}
+
+// src/hooks/delegation-enforcer.mts
 import { fileURLToPath } from "url";
 
 // src/hooks/runner.mts
-import { appendFileSync, mkdirSync } from "fs";
-import { homedir } from "os";
-import { join } from "path";
+import { appendFileSync, mkdirSync as mkdirSync2 } from "fs";
+import { homedir as homedir2 } from "os";
+import { join as join2 } from "path";
 async function readStdin() {
   const readStdinActual = async () => {
     const chunks = [];
@@ -31,10 +54,10 @@ function logHookFailure(hook, reason) {
   } catch {
   }
   try {
-    const logsDir = join(homedir(), ".omp", "logs");
-    mkdirSync(logsDir, { recursive: true });
+    const logsDir = join2(homedir2(), ".omp", "logs");
+    mkdirSync2(logsDir, { recursive: true });
     const record = JSON.stringify({ ts: (/* @__PURE__ */ new Date()).toISOString(), hook, reason });
-    appendFileSync(join(logsDir, "hook-failures.jsonl"), record + "\n", "utf-8");
+    appendFileSync(join2(logsDir, "hook-failures.jsonl"), record + "\n", "utf-8");
   } catch {
   }
 }
@@ -64,19 +87,11 @@ async function runHookMain(processHook2, options = {}) {
 }
 
 // src/hooks/delegation-enforcer.mts
-function getSessionStateDir() {
-  const ompDir = join2(homedir2(), ".omp", "state");
-  return ompDir;
-}
 function getCurrentAgent(sessionId) {
-  try {
-    const stateDir = getSessionStateDir();
-    const sessionFile = sessionId ? join2(stateDir, "sessions", sessionId, "session.json") : join2(stateDir, "session.json");
-    const data = JSON.parse(readFileSync(sessionFile, "utf-8"));
-    return data.activeAgent || null;
-  } catch {
-    return null;
-  }
+  const stateDir = getStateDir();
+  const sessionFile = sessionId ? join3(stateDir, "sessions", sessionId, "session.json") : join3(stateDir, "session.json");
+  const data = readJsonSafe(sessionFile, null);
+  return data?.activeAgent || null;
 }
 var BLOCKED_TOOLS = /* @__PURE__ */ new Set(["Write", "Edit"]);
 var BLOCKED_AGENT = "orchestrator";

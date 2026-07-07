@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, renameSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 
@@ -12,11 +12,13 @@ vi.mock("fs", () => ({
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
   mkdirSync: vi.fn(),
+  renameSync: vi.fn(),
 }));
 
 const mockReadFileSync = vi.mocked(readFileSync);
 const mockWriteFileSync = vi.mocked(writeFileSync);
 const mockMkdirSync = vi.mocked(mkdirSync);
+const mockRenameSync = vi.mocked(renameSync);
 
 const { loadSpending, saveSpending, incrementSpending } = await import("../../src/spending/tracker.mts");
 
@@ -32,6 +34,7 @@ describe("spending tracker", () => {
     vi.clearAllMocks();
     mockWriteFileSync.mockImplementation(() => undefined);
     mockMkdirSync.mockImplementation(() => undefined);
+    mockRenameSync.mockImplementation(() => undefined);
   });
 
   describe("loadSpending", () => {
@@ -135,11 +138,13 @@ describe("spending tracker", () => {
       };
       saveSpending(state);
       expect(mockMkdirSync).toHaveBeenCalled();
+      // Atomic write: payload goes to <path>.tmp, then renamed into place
       expect(mockWriteFileSync).toHaveBeenCalledWith(
-        SPENDING_PATH,
+        `${SPENDING_PATH}.tmp`,
         JSON.stringify(state, null, 2),
         "utf-8"
       );
+      expect(mockRenameSync).toHaveBeenCalledWith(`${SPENDING_PATH}.tmp`, SPENDING_PATH);
     });
 
     it("is non-blocking on write failure — warns instead of throwing", () => {

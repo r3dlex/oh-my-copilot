@@ -8,9 +8,8 @@
  * not a delegatable agent.
  */
 
-import { readFileSync } from "fs";
-import { homedir } from "os";
 import { join } from "path";
+import { getStateDir, readJsonSafe } from "../utils/file-system.mts";
 
 export interface HookInput {
   hook_type: "PreToolUse";
@@ -29,22 +28,13 @@ export interface HookOutput {
   log: string[];
 }
 
-function getSessionStateDir(): string {
-  const ompDir = join(homedir(), ".omp", "state");
-  return ompDir;
-}
-
 function getCurrentAgent(sessionId?: string): string | null {
-  try {
-    const stateDir = getSessionStateDir();
-    const sessionFile = sessionId
-      ? join(stateDir, "sessions", sessionId, "session.json")
-      : join(stateDir, "session.json");
-    const data = JSON.parse(readFileSync(sessionFile, "utf-8"));
-    return data.activeAgent || null;
-  } catch {
-    return null;
-  }
+  const stateDir = getStateDir();
+  const sessionFile = sessionId
+    ? join(stateDir, "sessions", sessionId, "session.json")
+    : join(stateDir, "session.json");
+  const data = readJsonSafe<{ activeAgent?: string } | null>(sessionFile, null);
+  return data?.activeAgent || null;
 }
 
 const BLOCKED_TOOLS = new Set(["Write", "Edit"]);

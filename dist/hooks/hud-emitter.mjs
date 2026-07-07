@@ -1,14 +1,52 @@
 // src/hooks/hud-emitter.mts
-import { mkdirSync as mkdirSync3, readFileSync as readFileSync2, writeFileSync as writeFileSync2 } from "fs";
+import { mkdirSync as mkdirSync3, readFileSync as readFileSync3, writeFileSync as writeFileSync2 } from "fs";
 import { createRequire } from "module";
 import { homedir as homedir3 } from "os";
 import { join as join3 } from "path";
 
 // src/hud/statusline.mts
+import { readFileSync as readFileSync2 } from "fs";
+import { fileURLToPath } from "url";
+
+// src/utils/file-system.mts
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
 import { homedir } from "os";
 import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+function ensureDir(dirPath) {
+  mkdirSync(dirPath, { recursive: true });
+}
+function readJsonSafe(path, fallback, options) {
+  let raw;
+  try {
+    raw = readFileSync(path, "utf-8");
+  } catch (err) {
+    if (err.code !== "ENOENT") options?.onMalformed?.(path, err);
+    return fallback;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    options?.onMalformed?.(path, err);
+    return fallback;
+  }
+}
+function writeFileAtomic(path, content, mode) {
+  ensureDir(dirname(path));
+  const tempPath = `${path}.tmp`;
+  writeFileSync(tempPath, content, mode === void 0 ? "utf-8" : { encoding: "utf-8", mode });
+  renameSync(tempPath, path);
+}
+function getHudPaths(home = process.env["HOME"] || homedir()) {
+  const ompDir = join(home, ".omp");
+  const hudDir = join(ompDir, "hud");
+  return {
+    legacyLinePath: join(ompDir, "hud.line"),
+    hudDir,
+    statusJsonPath: join(hudDir, "status.json"),
+    displayPath: join(hudDir, "display.txt"),
+    tmuxSegmentPath: join(hudDir, "tmux-segment.sh")
+  };
+}
 
 // src/hud/renderer.mts
 function formatAge(startedAt) {
@@ -40,26 +78,7 @@ var DEFAULT_VERSION = "0.0.0";
 var DEFAULT_STATUSLINE = "OMP | hud: no active session";
 var DEFAULT_TOKEN_BUDGET = 2e5;
 var DEFAULT_PREMIUM_REQUESTS_TOTAL = 1500;
-function getStatuslinePaths(home = process.env["HOME"] || homedir()) {
-  const ompDir = join(home, ".omp");
-  const hudDir = join(ompDir, "hud");
-  return {
-    legacyLinePath: join(ompDir, "hud.line"),
-    hudDir,
-    statusJsonPath: join(hudDir, "status.json"),
-    displayPath: join(hudDir, "display.txt"),
-    tmuxSegmentPath: join(hudDir, "tmux-segment.sh")
-  };
-}
-function ensureParent(filePath) {
-  mkdirSync(dirname(filePath), { recursive: true });
-}
-function writeAtomic(filePath, content, mode) {
-  ensureParent(filePath);
-  const tempPath = `${filePath}.tmp`;
-  writeFileSync(tempPath, content, mode === void 0 ? "utf-8" : { encoding: "utf-8", mode });
-  renameSync(tempPath, filePath);
-}
+var getStatuslinePaths = getHudPaths;
 function normalizeStringArray(value) {
   if (!Array.isArray(value)) return [];
   return value.filter((item) => typeof item === "string");
@@ -143,29 +162,28 @@ function writeHudArtifacts(snapshot, paths = getStatuslinePaths()) {
   const line = renderPlain(state);
   const serializedState = `${JSON.stringify(serializeHudState(state), null, 2)}
 `;
-  writeAtomic(paths.statusJsonPath, serializedState);
-  writeAtomic(paths.displayPath, `${line}
+  writeFileAtomic(paths.statusJsonPath, serializedState);
+  writeFileAtomic(paths.displayPath, `${line}
 `);
-  writeAtomic(paths.tmuxSegmentPath, `${line}
+  writeFileAtomic(paths.tmuxSegmentPath, `${line}
 `, 493);
-  writeAtomic(paths.legacyLinePath, `${line}
+  writeFileAtomic(paths.legacyLinePath, `${line}
 `);
   return { line, state, paths };
 }
 function readStatusline(paths = getStatuslinePaths()) {
-  try {
-    const parsed = JSON.parse(readFileSync(paths.statusJsonPath, "utf-8"));
+  const parsed = readJsonSafe(paths.statusJsonPath, null);
+  if (parsed !== null) {
     const state = deserializeHudState(parsed);
     if (state) return renderPlain(state);
-  } catch {
   }
   try {
-    const line = readFileSync(paths.displayPath, "utf-8").trim();
+    const line = readFileSync2(paths.displayPath, "utf-8").trim();
     if (line) return line;
   } catch {
   }
   try {
-    const line = readFileSync(paths.legacyLinePath, "utf-8").trim();
+    const line = readFileSync2(paths.legacyLinePath, "utf-8").trim();
     if (line) return line;
   } catch {
   }
@@ -247,7 +265,7 @@ function getStatePath(sessionId) {
   }
   return join3(base, "session.json");
 }
-function ensureDir(path) {
+function ensureDir2(path) {
   mkdirSync3(path.substring(0, path.lastIndexOf("/")), { recursive: true });
 }
 function stringifyOutput(value) {
@@ -324,7 +342,7 @@ function processSessionStart(input) {
     warning_active: false
   };
   const statePath = getStatePath(sessionId);
-  ensureDir(statePath);
+  ensureDir2(statePath);
   writeFileSync2(statePath, JSON.stringify(state), "utf-8");
   log.push(`Session initialized: ${sessionId}`);
   const { line, state: hudState } = writeHudArtifacts(state);
@@ -342,7 +360,7 @@ function processPostToolUse(input) {
   const statePath = getStatePath(input.session_id);
   let state;
   try {
-    const raw = JSON.parse(readFileSync2(statePath, "utf-8"));
+    const raw = JSON.parse(readFileSync3(statePath, "utf-8"));
     state = {
       ...raw,
       version: typeof raw.version === "string" ? raw.version : PKG_VERSION,
