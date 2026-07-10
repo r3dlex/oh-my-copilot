@@ -14138,8 +14138,8 @@ __export(agent_loader_exports, {
   getAgent: () => getAgent,
   loadAllAgents: () => loadAllAgents
 });
-import { existsSync, readFileSync, readdirSync } from "fs";
-import { join } from "path";
+import { existsSync as existsSync2, readFileSync as readFileSync2, readdirSync } from "fs";
+import { join as join2 } from "path";
 function normalizeModelTier(modelTier, model) {
   if (modelTier === "high" || modelTier === "standard" || modelTier === "fast") {
     return modelTier;
@@ -14151,8 +14151,8 @@ function normalizeModelTier(modelTier, model) {
 }
 function loadAgentFile(dir, filename) {
   try {
-    const filePath = join(dir, filename);
-    const content = readFileSync(filePath, "utf-8");
+    const filePath = join2(dir, filename);
+    const content = readFileSync2(filePath, "utf-8");
     const parsed = parseAgentFile(content);
     if (!parsed) return null;
     return {
@@ -14171,7 +14171,7 @@ function loadAllAgents() {
   if (cache) return cache;
   cache = /* @__PURE__ */ new Map();
   for (const dir of AGENTS_DIRS) {
-    if (!existsSync(dir)) continue;
+    if (!existsSync2(dir)) continue;
     try {
       const files = readdirSync(dir).filter((f) => f.endsWith(".agent.md"));
       for (const file2 of files) {
@@ -14197,8 +14197,8 @@ var init_agent_loader = __esm({
     "use strict";
     init_yaml_parser();
     AGENTS_DIRS = [
-      join(process.cwd(), "agents"),
-      join(process.cwd(), "src", "agents")
+      join2(process.cwd(), "agents"),
+      join2(process.cwd(), "src", "agents")
     ];
     cache = null;
   }
@@ -28240,9 +28240,9 @@ var StdioServerTransport = class {
 };
 
 // src/mcp/server.mts
-import { readFileSync as readFileSync2, mkdirSync } from "fs";
-import { homedir } from "os";
-import { join as join2, dirname } from "path";
+import { readFileSync as readFileSync3, mkdirSync as mkdirSync2 } from "fs";
+import { homedir as homedir2 } from "os";
+import { join as join3, dirname as dirname3 } from "path";
 import { randomUUID } from "crypto";
 
 // src/mcp/db-loader.mts
@@ -28253,14 +28253,162 @@ try {
 } catch {
 }
 
+// src/mcp/state-manager.mts
+import { existsSync } from "fs";
+import { dirname as dirname2 } from "path";
+
+// src/utils/file-system.mts
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
+import { homedir } from "os";
+import { dirname, join } from "path";
+function ensureDir(dirPath) {
+  mkdirSync(dirPath, { recursive: true });
+}
+function readJsonSafe(path, fallback, options) {
+  let raw;
+  try {
+    raw = readFileSync(path, "utf-8");
+  } catch (err) {
+    if (err.code !== "ENOENT") options?.onMalformed?.(path, err);
+    return fallback;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    options?.onMalformed?.(path, err);
+    return fallback;
+  }
+}
+function writeFileAtomic(path, content, mode) {
+  ensureDir(dirname(path));
+  const tempPath = `${path}.tmp`;
+  writeFileSync(tempPath, content, mode === void 0 ? "utf-8" : { encoding: "utf-8", mode });
+  renameSync(tempPath, path);
+}
+function writeJsonAtomic(path, data) {
+  writeFileAtomic(path, JSON.stringify(data, null, 2));
+}
+function getStateDir() {
+  return join(homedir(), ".omp", "state");
+}
+function getSessionIndexPath() {
+  return join(getStateDir(), "sessions.json");
+}
+function getSessionStatePath() {
+  return join(getStateDir(), "session-states.json");
+}
+function getPsmDbPath() {
+  return join(getStateDir(), "omp.db");
+}
+
+// src/mcp/state-manager.mts
+var _db = null;
+var SESSION_SCHEMA_SQL = `
+  CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    worktree_id TEXT,
+    state_json TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_sessions_worktree ON sessions(worktree_id);
+  CREATE INDEX IF NOT EXISTS idx_sessions_updated ON sessions(updated_at);
+`;
+var SESSION_STATE_KEYS = /* @__PURE__ */ new Set([
+  "id",
+  "worktree_id",
+  "state_json",
+  "created_at",
+  "updated_at"
+]);
+function initializeSessionSchema(database) {
+  database.exec(SESSION_SCHEMA_SQL);
+}
+function getDb() {
+  if (!SqliteConstructor) return null;
+  if (!_db) {
+    const dbPath = getPsmDbPath();
+    ensureDir(dirname2(dbPath));
+    const database = new SqliteConstructor(dbPath);
+    database.pragma("journal_mode = WAL");
+    initializeSessionSchema(database);
+    _db = database;
+  }
+  return _db;
+}
+function readJsonSessions() {
+  const statePath = getSessionStatePath();
+  if (existsSync(statePath)) {
+    return filterSessionStates(readJsonSafe(statePath, []));
+  }
+  const legacySessions = filterSessionStates(
+    readJsonSafe(getSessionIndexPath(), [])
+  );
+  if (legacySessions.length > 0) {
+    writeJsonAtomic(statePath, legacySessions);
+  }
+  return legacySessions;
+}
+function writeJsonSessions(sessions) {
+  writeJsonAtomic(getSessionStatePath(), sessions);
+}
+function isSessionState(value) {
+  if (typeof value !== "object" || value === null) return false;
+  const session = value;
+  const keys = Object.keys(session);
+  return keys.length === 5 && keys.every((key) => SESSION_STATE_KEYS.has(key)) && typeof session.id === "string" && (typeof session.worktree_id === "string" || session.worktree_id === null) && typeof session.state_json === "string" && typeof session.created_at === "number" && typeof session.updated_at === "number";
+}
+function filterSessionStates(value) {
+  return Array.isArray(value) ? value.filter(isSessionState) : [];
+}
+function getLatestSession(database = getDb()) {
+  const db2 = database;
+  if (db2) {
+    const row = db2.prepare("SELECT * FROM sessions ORDER BY updated_at DESC LIMIT 1").get();
+    return row ?? null;
+  }
+  const sessions = readJsonSessions();
+  return sessions.sort((a, b) => b.updated_at - a.updated_at)[0] ?? null;
+}
+function saveSession(id, worktreeId, state, database = getDb()) {
+  const db2 = database;
+  const now = Date.now();
+  const stateJson = typeof state === "string" ? state : JSON.stringify(state);
+  if (db2) {
+    db2.prepare(`
+      INSERT INTO sessions (id, worktree_id, state_json, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        state_json = excluded.state_json,
+        updated_at = excluded.updated_at
+    `).run(id, worktreeId, stateJson, now, now);
+    return;
+  }
+  const sessions = readJsonSessions();
+  const idx = sessions.findIndex((s) => s.id === id);
+  if (idx >= 0) {
+    sessions[idx] = { ...sessions[idx], state_json: stateJson, updated_at: now };
+  } else {
+    sessions.push({ id, worktree_id: worktreeId, state_json: stateJson, created_at: now, updated_at: now });
+  }
+  writeJsonSessions(sessions);
+}
+function listSessions(database = getDb()) {
+  const db2 = database;
+  if (db2) {
+    return db2.prepare("SELECT * FROM sessions ORDER BY updated_at DESC").all();
+  }
+  return readJsonSessions().sort((a, b) => b.updated_at - a.updated_at);
+}
+
 // src/mcp/server.mts
 function getDbPath() {
   const envPath = process.env["OMP_STATE_DB"];
-  if (envPath) return envPath.replace("~", homedir());
-  return join2(homedir(), ".omp", "state", "omp.db");
+  if (envPath) return envPath.replace("~", homedir2());
+  return join3(homedir2(), ".omp", "state", "omp.db");
 }
 function ensureDbDir(dbPath) {
-  mkdirSync(dirname(dbPath), { recursive: true });
+  mkdirSync2(dirname3(dbPath), { recursive: true });
 }
 var db = null;
 if (SqliteConstructor) {
@@ -28268,17 +28416,8 @@ if (SqliteConstructor) {
   ensureDbDir(dbPath);
   db = new SqliteConstructor(dbPath);
   db.pragma("journal_mode = WAL");
+  initializeSessionSchema(db);
   db.exec(`
-    CREATE TABLE IF NOT EXISTS sessions (
-      id TEXT PRIMARY KEY,
-      worktree_id TEXT,
-      state_json TEXT NOT NULL,
-      created_at INTEGER NOT NULL,
-      updated_at INTEGER NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS idx_sessions_worktree ON sessions(worktree_id);
-    CREATE INDEX IF NOT EXISTS idx_sessions_updated ON sessions(updated_at);
-
     CREATE TABLE IF NOT EXISTS memory (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL,
@@ -28309,17 +28448,17 @@ var TOOLS = [
   // State tools
   {
     name: "omp_get_session_state",
-    description: "Retrieve the current session state from PSM",
+    description: "Retrieve the latest persisted MCP Session State",
     inputSchema: { type: "object", properties: {} }
   },
   {
     name: "omp_save_session",
-    description: "Persist current session state to SQLite",
+    description: "Persist the current MCP Session State to SQLite or JSON fallback",
     inputSchema: { type: "object", properties: {} }
   },
   {
     name: "omp_list_sessions",
-    description: "List all saved OMP sessions with IDs, creation dates, and task counts",
+    description: "List saved MCP Session States with IDs and timestamps",
     inputSchema: { type: "object", properties: {} }
   },
   {
@@ -28427,23 +28566,22 @@ function handleListTools() {
 async function handleCallTool(name, args) {
   switch (name) {
     case "omp_get_session_state": {
-      if (!db) return { content: [{ type: "text", text: "null" }] };
-      const sessions = db.prepare("SELECT * FROM sessions ORDER BY updated_at DESC LIMIT 1").all();
-      return { content: [{ type: "text", text: JSON.stringify(sessions[0] || null, null, 2) }] };
+      const session = getLatestSession(db);
+      return { content: [{ type: "text", text: JSON.stringify(session, null, 2) }] };
     }
     case "omp_save_session": {
       const sessionId = args.sessionId || randomUUID();
       const stateJson = args.stateJson || JSON.stringify({});
-      if (!db) return { content: [{ type: "text", text: JSON.stringify({ status: "ok", sessionId, note: "SQLite unavailable; state not persisted" }) }] };
-      const now = Date.now();
-      db.prepare(
-        "INSERT OR REPLACE INTO sessions (id, worktree_id, state_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
-      ).run(sessionId, args.worktreeId || null, stateJson, now, now);
-      return { content: [{ type: "text", text: JSON.stringify({ status: "ok", sessionId }) }] };
+      saveSession(sessionId, args.worktreeId || null, stateJson, db);
+      const response = db ? { status: "ok", sessionId } : { status: "ok", sessionId, note: "SQLite unavailable; state persisted to JSON fallback" };
+      return { content: [{ type: "text", text: JSON.stringify(response) }] };
     }
     case "omp_list_sessions": {
-      if (!db) return { content: [{ type: "text", text: "[]" }] };
-      const sessions = db.prepare("SELECT id, created_at, updated_at FROM sessions ORDER BY updated_at DESC").all();
+      const sessions = listSessions(db).map(({ id, created_at, updated_at }) => ({
+        id,
+        created_at,
+        updated_at
+      }));
       return { content: [{ type: "text", text: JSON.stringify(sessions, null, 2) }] };
     }
     case "omp_get_agents": {
@@ -28480,8 +28618,8 @@ async function handleCallTool(name, args) {
     }
     case "omp_get_hud_state": {
       try {
-        const hudPath = join2(homedir(), ".omp", "hud.line");
-        const hud = readFileSync2(hudPath, "utf-8").trim();
+        const hudPath = join3(homedir2(), ".omp", "hud.line");
+        const hud = readFileSync3(hudPath, "utf-8").trim();
         return { content: [{ type: "text", text: hud }] };
       } catch {
         return { content: [{ type: "text", text: "No HUD state available" }] };

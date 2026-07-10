@@ -86,9 +86,14 @@ export function getSpendingPath(): string {
   return join(getStateDir(), "spending-monthly.json");
 }
 
-/** `~/.omp/state/sessions.json` — session index (PSM + MCP JSON fallback). */
+/** `~/.omp/state/sessions.json` — Project Session index. */
 export function getSessionIndexPath(): string {
   return join(getStateDir(), "sessions.json");
+}
+
+/** `~/.omp/state/session-states.json` — Session State JSON fallback. */
+export function getSessionStatePath(): string {
+  return join(getStateDir(), "session-states.json");
 }
 
 /** `~/.omp/state/sessions` — per-session state directories. */

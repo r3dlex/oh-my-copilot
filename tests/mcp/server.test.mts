@@ -7,13 +7,21 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+const sessionStateManager = vi.hoisted(() => ({
+  initializeSessionSchema: vi.fn(),
+  getLatestSession: vi.fn(),
+  saveSession: vi.fn(),
+  listSessions: vi.fn(),
+}));
+
+vi.mock("../../src/mcp/state-manager.mts", () => ({
+  ...sessionStateManager,
+}));
+
 // --- Mock db-loader (wraps better-sqlite3 with createRequire fallback) ---
-const mockRun = vi.fn();
-const mockAll = vi.fn(() => []);
-const mockPrepare = vi.fn(() => ({ run: mockRun, all: mockAll }));
 const mockExec = vi.fn();
 const mockPragma = vi.fn();
-const mockDbInstance = { prepare: mockPrepare, exec: mockExec, pragma: mockPragma };
+const mockDbInstance = { exec: mockExec, pragma: mockPragma };
 vi.mock("../../src/mcp/db-loader.mts", () => ({
   SqliteConstructor: vi.fn(() => mockDbInstance),
 }));
@@ -69,14 +77,16 @@ await import("../../src/mcp/server.mts");
 // Capture call counts before any test can clear them
 const initialSetRequestHandlerCalls = mockSetRequestHandler.mock.calls.slice();
 const wasConnectCalled = mockConnect.mock.calls.length > 0;
+const initialSessionSchemaCalls = sessionStateManager.initializeSessionSchema.mock.calls.slice();
 
 describe("MCP Server", () => {
   beforeEach(() => {
     // Only clear the db method mocks between tests, not the handler registry
-    mockRun.mockClear();
-    mockAll.mockClear();
-    mockAll.mockReturnValue([]);
-    mockPrepare.mockReturnValue({ run: mockRun, all: mockAll });
+    sessionStateManager.getLatestSession.mockReset();
+    sessionStateManager.getLatestSession.mockReturnValue(null);
+    sessionStateManager.saveSession.mockReset();
+    sessionStateManager.listSessions.mockReset();
+    sessionStateManager.listSessions.mockReturnValue([]);
   });
 
   describe("server startup", () => {
@@ -97,6 +107,10 @@ describe("MCP Server", () => {
     it("should connect to transport", () => {
       expect(wasConnectCalled).toBe(true);
     });
+
+    it("delegates Session State schema initialization to the state manager", () => {
+      expect(initialSessionSchemaCalls).toEqual([[mockDbInstance]]);
+    });
   });
 
   describe("handleListTools", () => {
@@ -116,6 +130,17 @@ describe("MCP Server", () => {
       expect(names).toContain("omp_get_session_state");
     });
 
+    it("describes Session State storage without conflating it with Project Sessions", () => {
+      const handler = registeredHandlers.get("ListToolsRequestSchema") as Function;
+      const result = handler({});
+      const getState = result.tools.find((tool: { name: string }) => tool.name === "omp_get_session_state");
+      const saveState = result.tools.find((tool: { name: string }) => tool.name === "omp_save_session");
+
+      expect(getState.description).toContain("Session State");
+      expect(getState.description).not.toContain("PSM");
+      expect(saveState.description).toContain("SQLite or JSON fallback");
+    });
+
     it("should include omp_delegate_task tool", () => {
       const handler = registeredHandlers.get("ListToolsRequestSchema") as Function;
       const result = handler({});
@@ -130,24 +155,33 @@ describe("MCP Server", () => {
       return handler({ params: { name, arguments: args } });
     }
 
-    it("omp_get_session_state should query sessions", async () => {
-      mockAll.mockReturnValue([{ id: "s1", state_json: "{}" }]);
+    it("omp_get_session_state delegates through the state manager", async () => {
+      sessionStateManager.getLatestSession.mockReturnValue({ id: "s1", state_json: "{}" });
       const result = await callTool("omp_get_session_state");
+      expect(sessionStateManager.getLatestSession).toHaveBeenCalledWith(mockDbInstance);
       expect(result.content[0].type).toBe("text");
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed).toHaveProperty("id", "s1");
     });
 
     it("omp_get_session_state returns null when no sessions", async () => {
-      mockAll.mockReturnValue([]);
       const result = await callTool("omp_get_session_state");
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed).toBeNull();
     });
 
     it("omp_save_session should insert a session", async () => {
-      const result = await callTool("omp_save_session", { sessionId: "my-id" });
-      expect(mockRun).toHaveBeenCalled();
+      const result = await callTool("omp_save_session", {
+        sessionId: "my-id",
+        worktreeId: "wt-1",
+        stateJson: '{"status":"active"}',
+      });
+      expect(sessionStateManager.saveSession).toHaveBeenCalledWith(
+        "my-id",
+        "wt-1",
+        '{"status":"active"}',
+        mockDbInstance
+      );
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed.status).toBe("ok");
       expect(parsed.sessionId).toBe("my-id");
@@ -160,10 +194,13 @@ describe("MCP Server", () => {
     });
 
     it("omp_list_sessions should return sessions array", async () => {
-      mockAll.mockReturnValue([{ id: "s1", created_at: 1, updated_at: 2 }]);
+      sessionStateManager.listSessions.mockReturnValue([
+        { id: "s1", worktree_id: null, state_json: "{}", created_at: 1, updated_at: 2 },
+      ]);
       const result = await callTool("omp_list_sessions");
+      expect(sessionStateManager.listSessions).toHaveBeenCalledWith(mockDbInstance);
       const parsed = JSON.parse(result.content[0].text);
-      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed).toEqual([{ id: "s1", created_at: 1, updated_at: 2 }]);
     });
 
     it("omp_get_agents should return agents list", async () => {
