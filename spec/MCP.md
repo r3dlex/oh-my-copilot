@@ -49,8 +49,8 @@ Client (e.g. Claude Desktop)
 │  └────────────┬───────────────┘  │
 │               │                  │
 │  ┌────────────▼───────────────┐  │
-│  │  SQLite State Layer        │  │
-│  │  ~/.omp/state/omp.db       │  │
+│  │  Session State Manager     │  │
+│  │  SQLite + JSON fallback    │  │
 │  └────────────────────────────┘  │
 └──────────────────────────────────┘
 ```
@@ -66,9 +66,9 @@ The OMP MCP server exposes the following 10 tools:
 | 3 | `omp_activate_skill` | Activate an OMP skill by keyword or ID | `skillId` or `keyword` |
 | 4 | `omp_get_hud_state` | Return the current HUD state | none |
 | 5 | `omp_subscribe_hud_events` | Subscribe to HUD event stream | `eventTypes[]` |
-| 6 | `omp_get_session_state` | Retrieve the current session state from PSM | none |
-| 7 | `omp_save_session` | Persist current session state to SQLite | none |
-| 8 | `omp_list_sessions` | List all saved sessions with metadata | none |
+| 6 | `omp_get_session_state` | Retrieve the latest persisted MCP Session State | none |
+| 7 | `omp_save_session` | Persist the current MCP Session State to SQLite or JSON fallback | none |
+| 8 | `omp_list_sessions` | List saved MCP Session States with metadata | none |
 | 9 | `omp_invoke_hook` | Manually invoke a hook by ID with input | `hookId`, `input` |
 | 10 | `omp_fleet_status` | Return fleet-wide status from fleet SQLite | none |
 
@@ -174,7 +174,7 @@ Clients unsubscribe by closing their stdio connection. The subscription is scope
 ```json
 {
   "name": "omp_get_session_state",
-  "description": "Retrieve the current session state from the PSM",
+  "description": "Retrieve the latest persisted MCP Session State",
   "inputSchema": { "type": "object", "properties": {} }
 }
 ```
@@ -184,7 +184,7 @@ Clients unsubscribe by closing their stdio connection. The subscription is scope
 ```json
 {
   "name": "omp_save_session",
-  "description": "Persist the current session state to SQLite",
+  "description": "Persist the current MCP Session State to SQLite or JSON fallback",
   "inputSchema": { "type": "object", "properties": {} }
 }
 ```
@@ -194,7 +194,7 @@ Clients unsubscribe by closing their stdio connection. The subscription is scope
 ```json
 {
   "name": "omp_list_sessions",
-  "description": "List all saved OMP sessions with IDs, creation dates, and task counts",
+  "description": "List saved MCP Session States with IDs and timestamps",
   "inputSchema": { "type": "object", "properties": {} }
 }
 ```
@@ -226,11 +226,21 @@ Clients unsubscribe by closing their stdio connection. The subscription is scope
 }
 ```
 
-## 6. SQLite Schema
+## 6. Session State Persistence
 
-OMP uses SQLite for state persistence. The main database is at `~/.omp/state/omp.db`.
+The State Manager prefers SQLite at `~/.omp/state/omp.db` and persists to
+`~/.omp/state/session-states.json` when SQLite is unavailable. The JSON file is
+distinct from the Project Session index at `~/.omp/state/sessions.json`.
+On first fallback read, exact legacy Session State records are copied atomically
+from the old shared path; Project Session records are never imported or changed.
 
-### Table: sessions
+The State Manager owns the `sessions` schema and initializes it both for its own
+database connection and for the MCP server's shared connection. The MCP server
+continues to own the `memory` and `trace` schemas.
+
+### SQLite Adapter
+
+#### Table: sessions
 
 ```sql
 CREATE TABLE sessions (
@@ -244,7 +254,7 @@ CREATE INDEX idx_sessions_worktree ON sessions(worktree_id);
 CREATE INDEX idx_sessions_updated ON sessions(updated_at);
 ```
 
-### Table: memory
+#### Table: memory
 
 ```sql
 CREATE TABLE memory (
@@ -260,7 +270,7 @@ CREATE INDEX idx_memory_category ON memory(category);
 CREATE INDEX idx_memory_session ON memory(session_id);
 ```
 
-### Table: trace
+#### Table: trace
 
 ```sql
 CREATE TABLE trace (
@@ -290,7 +300,7 @@ Incoming MCP tool requests are routed as follows:
 2. Routes to `ToolRouter.handle(request)`
 3. ToolRouter validates against `ToolDefinition` input schema
 4. For agent-delegation tools: calls `orchestrator.delegate(agentId, task)`
-5. For state tools: reads/writes SQLite via `StateManager`
+5. For Session State tools: reads/writes through `StateManager`, using SQLite or its JSON fallback
 6. Returns JSON-RPC response with result or error
 
 Errors follow standard JSON-RPC error codes:

@@ -13,6 +13,7 @@ import {
   getHudPaths,
   getPsmDbPath,
   getSessionIndexPath,
+  getSessionStatePath,
   getSessionsDir,
   getSpendingPath,
   getStateDir,
@@ -127,6 +128,8 @@ describe("file-system seam", () => {
     it("state file factories resolve under the state dir", () => {
       expect(getSpendingPath()).toBe(join(getStateDir(), "spending-monthly.json"));
       expect(getSessionIndexPath()).toBe(join(getStateDir(), "sessions.json"));
+      expect(getSessionStatePath()).toBe(join(getStateDir(), "session-states.json"));
+      expect(getSessionStatePath()).not.toBe(getSessionIndexPath());
       expect(getSessionsDir()).toBe(join(getStateDir(), "sessions"));
       expect(getPsmDbPath()).toBe(join(getStateDir(), "omp.db"));
     });

@@ -20,7 +20,7 @@ The six worst offenders each hand-roll the same three concerns:
 | `src/spending/tracker.mts` | `~/.omp/state/spending-monthly.json` | `mkdirSync(dirname)` | try/parse, fresh state | plain `writeFileSync` |
 | `src/hud/statusline.mts` | `~/.omp/hud/*`, `~/.omp/hud.line` | local `ensureParent` | try/parse chain | local temp+rename (`writeAtomic`) |
 | `src/psm/session.mts` | `~/.omp/state/sessions*` | local `ensureDir` | try/parse, `[]` | plain `writeFileSync` |
-| `src/mcp/state-manager.mts` | `~/.omp/state/omp.db`, `~/.omp/state/sessions.json` | local `ensureDir(filePath)` | existsSync + try/parse, `[]` | plain `writeFileSync` |
+| `src/mcp/state-manager.mts` | `~/.omp/state/omp.db`, `~/.omp/state/session-states.json` | local `ensureDir(filePath)` | existsSync + try/parse, `[]` | plain `writeFileSync` |
 | `src/hooks/delegation-enforcer.mts` | `~/.omp/state/session(s)*.json` | — | try/parse, `null` | — |
 
 Atomicity is inconsistent: only the HUD statusline writes temp+rename; every
@@ -43,7 +43,10 @@ One seam module `src/utils/file-system.mts` owns:
 - **Path factories** (single source of truth for the real paths above)
   - `getConfigPath(scope)` — `./.omp/config.json` (local) / `~/.omp/config.json` (global)
   - `getSpendingPath()` — `~/.omp/state/spending-monthly.json`
-  - `getSessionIndexPath()` — `~/.omp/state/sessions.json`
+  - `getSessionIndexPath()` — `~/.omp/state/sessions.json` (Project Session index)
+  - `getSessionStatePath()` — `~/.omp/state/session-states.json` (Session State JSON fallback;
+    exact legacy Session State records migrate atomically from `sessions.json`
+    only when this file is absent)
   - `getSessionsDir()` — `~/.omp/state/sessions`
   - `getStateDir()` — `~/.omp/state`
   - `getPsmDbPath()` — `~/.omp/state/omp.db`
@@ -52,23 +55,27 @@ One seam module `src/utils/file-system.mts` owns:
     re-exporting `getStatuslinePaths`/`StatuslinePaths` for consumers
     (`watch.mts`, `bin/omp.mjs`, `extension/extension.mjs`, tests).
 
-The six modules listed in A are refactored onto the seam in this PR. The
-remaining duplicating modules (e.g. `src/mcp/server.mts`,
-`src/mcp/memory-store.mts`, `src/skills/spending.mts`) are follow-up work and
-are intentionally NOT touched here.
+The six modules listed in A are refactored onto the seam. A follow-up repair
+also makes `src/mcp/state-manager.mts` own Session State persistence and its
+SQLite schema while `src/mcp/server.mts` delegates through that Interface.
+Other duplicating modules remain follow-up work.
 
 ## Acceptance criteria
 
 - [ ] `npm run typecheck`, `npm run test`, `npm run lint`,
       `npm run archgate:check`, and `npm run build` all green.
-- [ ] Behavior identical: same file paths, same JSON shapes/formatting, same
-      fallback semantics (ENOENT silent, malformed-config warn), HUD writes
-      remain atomic (temp+rename).
-- [ ] State writes in the six refactored modules are now uniformly atomic
-      (temp+rename) — this is the single intended behavioral improvement.
+- [ ] Behavior remains stable except for the intentional Session State repair:
+      Project Sessions keep `sessions.json`; JSON fallback uses
+      `session-states.json`, migrates only exact legacy Session State records,
+      and persists MCP saves when SQLite is unavailable. Other JSON shapes and
+      fallback semantics remain unchanged.
+- [ ] State writes in the six refactored modules are uniformly atomic
+      (temp+rename); the domain split and fallback persistence above are the
+      only additional behavioral improvements.
 - [ ] New tests cover `readJsonSafe` (missing file, malformed JSON, valid),
       `writeJsonAtomic` (create, overwrite, nested dir), and the path
       factories (`tests/utils/file-system.test.mts`; repo vitest convention —
       `tests/**`, not `src/**/__tests__`).
-- [ ] Total change stays under ~400 lines; only the six listed modules are
-      refactored.
+- [ ] The file-system seam stays focused on the six listed modules; the
+      Session State follow-up is limited to its Module, MCP delegation,
+      focused tests, and corresponding specifications.

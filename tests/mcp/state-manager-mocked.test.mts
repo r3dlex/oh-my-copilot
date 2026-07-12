@@ -20,7 +20,10 @@ vi.mock("os", () => ({
   homedir: () => "/home/testuser",
 }));
 
-import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, renameSync, writeFileSync } from "fs";
+
+const statePath = "/home/testuser/.omp/state/session-states.json";
+const legacyPath = "/home/testuser/.omp/state/sessions.json";
 
 describe("MCP state-manager (JSON fallback)", () => {
   beforeEach(() => {
@@ -128,6 +131,122 @@ describe("MCP state-manager (JSON fallback)", () => {
       const result = mgr.listSessions();
       expect(result[0].id).toBe("s2");
       expect(result[2].id).toBe("s3");
+    });
+
+    it("uses the Session State fallback instead of the Project Session index", async () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(readFileSync).mockReturnValue("[]");
+      const mgr = await loadManager();
+      mgr.listSessions();
+      expect(readFileSync).toHaveBeenCalledWith(statePath, "utf-8");
+    });
+
+    it("ignores records that do not match the Session State schema", async () => {
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(readFileSync).mockReturnValue(
+        JSON.stringify([
+          {
+            id: "project-session",
+            name: "issue-123",
+            worktreePath: "/work/issue-123",
+            branch: "omp/issue-123",
+            createdAt: 1,
+            lastActivityAt: 2,
+            status: "active",
+          },
+          { id: "state-1", worktree_id: null, state_json: "{}", created_at: 1, updated_at: 2 },
+        ])
+      );
+      const mgr = await loadManager();
+      expect(mgr.listSessions()).toEqual([
+        { id: "state-1", worktree_id: null, state_json: "{}", created_at: 1, updated_at: 2 },
+      ]);
+    });
+
+    it("atomically migrates exact legacy Session State records", async () => {
+      const sessionState = {
+        id: "state-1",
+        worktree_id: null,
+        state_json: "not-json",
+        created_at: 1,
+        updated_at: 2,
+      };
+      const projectSession = {
+        id: "project-1",
+        name: "issue-123",
+        worktreePath: "/work/issue-123",
+        branch: "omp/issue-123",
+        createdAt: 1,
+        lastActivityAt: 2,
+        status: "active",
+      };
+      const inexactState = { ...sessionState, id: "state-with-extra-field", name: "not-exact" };
+      vi.mocked(existsSync).mockImplementation((path) => path === legacyPath);
+      vi.mocked(readFileSync).mockImplementation((path) => {
+        if (path === legacyPath) return JSON.stringify([projectSession, inexactState, sessionState]);
+        throw Object.assign(new Error("missing"), { code: "ENOENT" });
+      });
+
+      const mgr = await loadManager();
+
+      expect(mgr.listSessions()).toEqual([sessionState]);
+      expect(readFileSync).toHaveBeenCalledWith(legacyPath, "utf-8");
+      expect(writeFileSync).toHaveBeenCalledWith(
+        `${statePath}.tmp`,
+        JSON.stringify([sessionState], null, 2),
+        "utf-8"
+      );
+      expect(renameSync).toHaveBeenCalledWith(`${statePath}.tmp`, statePath);
+      const writtenPaths = vi.mocked(writeFileSync).mock.calls.map(([path]) => path);
+      expect(writtenPaths).not.toContain(legacyPath);
+      expect(writtenPaths).not.toContain(`${legacyPath}.tmp`);
+    });
+
+    it("does not ingest or rewrite a legacy Project Session index", async () => {
+      const projectSession = {
+        id: "project-1",
+        name: "issue-123",
+        worktreePath: "/work/issue-123",
+        branch: "omp/issue-123",
+        createdAt: 1,
+        lastActivityAt: 2,
+        status: "active",
+      };
+      vi.mocked(existsSync).mockImplementation((path) => path === legacyPath);
+      vi.mocked(readFileSync).mockImplementation((path) => {
+        if (path === legacyPath) return JSON.stringify([projectSession]);
+        throw Object.assign(new Error("missing"), { code: "ENOENT" });
+      });
+
+      const mgr = await loadManager();
+
+      expect(mgr.listSessions()).toEqual([]);
+      expect(readFileSync).toHaveBeenCalledWith(legacyPath, "utf-8");
+      expect(writeFileSync).not.toHaveBeenCalled();
+      expect(renameSync).not.toHaveBeenCalled();
+    });
+
+    it("treats an existing Session State file as authoritative", async () => {
+      const legacyState = {
+        id: "legacy-state",
+        worktree_id: null,
+        state_json: "{}",
+        created_at: 1,
+        updated_at: 2,
+      };
+      vi.mocked(existsSync).mockImplementation((path) => path === statePath || path === legacyPath);
+      vi.mocked(readFileSync).mockImplementation((path) => {
+        if (path === statePath) return "[]";
+        if (path === legacyPath) return JSON.stringify([legacyState]);
+        throw new Error(`unexpected path: ${String(path)}`);
+      });
+
+      const mgr = await loadManager();
+
+      expect(mgr.listSessions()).toEqual([]);
+      expect(readFileSync).toHaveBeenCalledWith(statePath, "utf-8");
+      expect(readFileSync).not.toHaveBeenCalledWith(legacyPath, "utf-8");
+      expect(writeFileSync).not.toHaveBeenCalled();
     });
   });
 
