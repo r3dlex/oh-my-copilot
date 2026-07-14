@@ -104,7 +104,7 @@ Execution mode skills are top-level workflows that take over session orchestrati
 | 39 | `doctor` | General environment health check — shell, Node, Git, and plugin state diagnostics. |
 | 40 | `session` | Manage OMP session state — save, restore, list, and switch between named sessions. |
 | 41 | `build-fix` | Diagnose and automatically fix build/CI failures by analysing error output and applying targeted patches. |
-| 42 | `design` | Generate UI/UX designs and frontend components. Trigger: `design:`, `/omp:design` (not `/design` — collision risk). |
+| 42 | `design` | Generate UI/UX designs and frontend components. Trigger: `design:`, `/design`. |
 | 43 | `web-clone` | Clone and adapt a web page or design reference to the current codebase's component/style conventions. |
 
 ## 5. OMA Skill Porting (5-Step Process)

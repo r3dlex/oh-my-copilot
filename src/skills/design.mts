@@ -2,7 +2,7 @@
  * design skill
  *
  * ID:       design
- * Keywords: design:, /omp:design (NOT /design — collision-safe)
+ * Keywords: design:, /design
  * Tier:     guidance-only CLI stub
  */
 

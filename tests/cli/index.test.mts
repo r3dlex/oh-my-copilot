@@ -89,7 +89,7 @@ describe("src/index.mts CLI", () => {
     await runIndex(["psm"]);
 
     expect(consoleLog).toHaveBeenCalledWith("PSM commands:");
-    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("create <name>"));
+    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("/psm create <name>"));
     expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("Destroy session"));
   });
 
@@ -97,7 +97,12 @@ describe("src/index.mts CLI", () => {
     await runIndex(["bench"]);
 
     expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("SWE-bench requires Node.js subprocess"));
-    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("/omp:swe-bench"));
+    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("/swe-bench"));
+  });
+
+  it("prints manifest-backed design invocation guidance", async () => {
+    await runIndex(["design"]);
+    expect(consoleLog).toHaveBeenCalledWith(expect.stringContaining("use /design in Copilot CLI"));
   });
 
   it("exits with usage output for an unknown subcommand", async () => {

@@ -2,11 +2,11 @@
 
 > **Sister projects:** [oh-my-claudecode (OMC)](https://github.com/Yeachan-Heo/oh-my-claudecode) | [oh-my-codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex) | [oh-my-githubcopilot (OMP)](https://github.com/r3dlex/oh-my-githubcopilot) | [oh-my-antigravity (OMG)](https://github.com/r3dlex/oh-my-antigravity) | [oh-my-auggie (OMA)](https://github.com/r3dlex/oh-my-auggie)
 
-**Orchestrazione multi-agente per GitHub Copilot CLI. Nessuna curva di apprendimento.**
+**Orchestrazione multi-agente per GitHub Copilot CLI.**
 
-_Non imparare GitHub Copilot CLI. Usa semplicemente omp._
+[Quick Start](README.md#quick-start) • [Mental model](README.md#mental-model) • [Troubleshooting](README.md#troubleshooting) • [Discord](https://discord.gg/PUwSMR9XNk)
 
-[Get Started](#quick-start) • [CLI Reference](#cli-reference) • [Workflows](#workflows) • [Discord](https://discord.gg/PUwSMR9XNk)
+> **Canonical guide:** See [README.md](README.md) for the current detailed installation, safety, limits, and troubleshooting guide.
 
 ---
 
@@ -23,16 +23,15 @@ GitHub Copilot è già il luogo in cui molti sviluppatori chiedono aiuto; omp tr
 
 ```bash
 npm install -g oh-my-githubcopilot
-omp setup --scope project
-omp
+omp install
 ```
 
 Dopo il setup, riavvia la CLI perché appaiano i comandi `/`.
 
 ```bash
-omp doctor              # check prerequisites
-omp team run --task "..." --workers 2   # parallel work
-omp hud --watch         # live status
+omp version             # verify the installed version
+omp doctor              # check stale 2.0 agent references
+omp hud --watch         # optional live HUD view
 ```
 
 ---
@@ -41,12 +40,11 @@ omp hud --watch         # live status
 
 | Feature | Description |
 |---------|-------------|
-| **Specialized Agents** | 23+ agents (analyst, architect, executor, debugger, critic, verifier, test-engineer, writer, and more) |
+| **Specialized Agents** | Agent roles for analysis, architecture, execution, debugging, review, testing, documentation, and more |
 | **Parallel Team Mode** | tmux-based multi-worker orchestration with shared task state |
-| **Workflow Skills** | 39 skills built in — plan, deep-interview, ralph, autopilot, ultrawork, code-review, and more |
+| **Workflow Skills** | 59 skills built in — plan, deep-interview, ralph, autopilot, ultrawork, code-review, and more |
 | **Persistent Hooks** | Automatic tool tracking, project memory, session management |
 | **Real-time HUD** | Live status overlay showing agents, costs, and progress |
-| **CI/CD Ready** | Verification gates, test integration, release workflows |
 | **Multilingual** | README in 12 languages |
 
 ---
@@ -56,13 +54,11 @@ omp hud --watch         # live status
 
 | Command | Description |
 |---------|-------------|
-| `omp` | Launch interactive session |
-| `omp setup` | Configure GitHub Copilot CLI integration |
-| `omp doctor` | Check prerequisites and fix issues |
-| `omp team run` | Start parallel team execution |
-| `omp team status` | Check team progress |
+| `omp install` | Register OMP with GitHub Copilot CLI |
+| `omp version` | Show the installed OMP version |
+| `omp doctor` | Check for stale 2.0 agent references |
+| `omp help` | Show the packaged skill catalog |
 | `omp hud --watch` | Show live status overlay |
-| `omp trace` | Show execution trace |
 
 See the [full documentation](https://github.com/r3dlex/oh-my-githubcopilot#readme) for all commands.
 
@@ -108,11 +104,8 @@ omp ships execution-mode and planning-mode workflows as built-in skills.
 
 tmux-first multi-worker orchestration with persistent state and lifecycle controls.
 
-```bash
-omp team run --task "review src/ for reliability gaps" --workers 4
-omp team status --team omp --json
-omp team resume --team omp
-omp team shutdown --team omp --force
+```text
+/team review src/ for reliability gaps
 ```
 
 Per GitHub Copilot CLI, la modalità team mantiene sincronizzati gli asset agenti e skill in `.copilot/` mentre i worker del terminale si coordinano tramite stato durevole OMX/OMP. Usala quando un’attività Copilot richiede corsie separate per implementazione, verifica, documentazione o release e vuoi evidenza prima di avanzare il branch.

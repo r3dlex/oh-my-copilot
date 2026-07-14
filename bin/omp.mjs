@@ -312,12 +312,58 @@ var install_exports = {};
 __export(install_exports, {
   runInstall: () => runInstall
 });
+import { spawnSync as spawnSync2 } from "child_process";
+import { existsSync } from "fs";
 import { mkdir as mkdir2, readFile as readFile2, rename, writeFile as writeFile2 } from "fs/promises";
 import { homedir as homedir4 } from "os";
 import { dirname as dirname3, join as join4 } from "path";
 import { fileURLToPath as fileURLToPath2 } from "url";
-async function runInstall(settingsPath = join4(homedir4(), ".copilot", "settings.json")) {
-  const pkgRoot = join4(dirname3(fileURLToPath2(import.meta.url)), "..");
+function resolvePackageRoot() {
+  const moduleDirectory = dirname3(fileURLToPath2(import.meta.url));
+  const candidates = [join4(moduleDirectory, ".."), join4(moduleDirectory, "..", "..")];
+  const packageRoot = candidates.find((candidate) => existsSync(join4(candidate, "plugin.json")));
+  if (!packageRoot) {
+    throw new Error("omp install: could not locate the packaged plugin manifest");
+  }
+  return packageRoot;
+}
+function runCommand(command, args) {
+  const result = spawnSync2(command, args, {
+    encoding: "utf-8",
+    stdio: ["ignore", "pipe", "pipe"],
+    windowsHide: true
+  });
+  return {
+    error: result.error,
+    status: result.status,
+    stdout: result.stdout ?? "",
+    stderr: result.stderr ?? ""
+  };
+}
+function defaultSettingsPath() {
+  const copilotHome = process.env.COPILOT_HOME || join4(homedir4(), ".copilot");
+  return join4(copilotHome, "settings.json");
+}
+async function runInstall(settingsPath = defaultSettingsPath(), dependencies = {}) {
+  const pkgRoot = resolvePackageRoot();
+  const installResult = (dependencies.runCommand ?? defaultDependencies2.runCommand)("copilot", [
+    "plugin",
+    "install",
+    pkgRoot
+  ]);
+  if (installResult.error) {
+    const missingCommand = "code" in installResult.error && installResult.error.code === "ENOENT";
+    const detail = missingCommand ? "`copilot` was not found on PATH. Install GitHub Copilot CLI before running `omp install`." : installResult.error.message;
+    throw new Error(`omp install: could not register the plugin: ${detail}`, {
+      cause: installResult.error
+    });
+  }
+  if (installResult.status !== 0) {
+    const detail = installResult.stderr.trim() || installResult.stdout.trim();
+    throw new Error(
+      `omp install: \`copilot plugin install\` failed with exit code ${installResult.status ?? "unknown"}${detail ? `: ${detail}` : ""}`
+    );
+  }
   const statusLineCommand = join4(pkgRoot, "bin", "omp-statusline.sh");
   const marketplacePath = pkgRoot;
   let existing = {};
@@ -350,6 +396,7 @@ async function runInstall(settingsPath = join4(homedir4(), ".copilot", "settings
   await mkdir2(dirname3(settingsPath), { recursive: true });
   await writeFile2(tmp, JSON.stringify(merged, null, 2) + "\n", "utf-8");
   await rename(tmp, settingsPath);
+  console.log(`omp install: registered ${pkgRoot} with Copilot CLI`);
   console.log(`omp install: wrote ${settingsPath}`);
   console.log(`  statusLine.command: ${statusLineCommand}`);
   console.log(`  marketplace path:   ${marketplacePath}`);
@@ -357,9 +404,11 @@ async function runInstall(settingsPath = join4(homedir4(), ".copilot", "settings
   console.log(`
 Restart Copilot CLI to activate OMP.`);
 }
+var defaultDependencies2;
 var init_install = __esm({
   "src/cli/install.mts"() {
     "use strict";
+    defaultDependencies2 = { runCommand };
   }
 });
 
@@ -371,7 +420,7 @@ __export(doctor_exports, {
   scanProjectForStaleAgents: () => scanProjectForStaleAgents,
   scanTextForStaleAgents: () => scanTextForStaleAgents
 });
-import { existsSync, readFileSync as readFileSync4, readdirSync, statSync } from "fs";
+import { existsSync as existsSync2, readFileSync as readFileSync4, readdirSync, statSync } from "fs";
 import { join as join5, relative } from "path";
 function scanTextForStaleAgents(text, file) {
   const warnings = [];
@@ -418,11 +467,11 @@ function scanProjectForStaleAgents(cwd) {
   const targets = [];
   for (const file of SCAN_FILES) {
     const fullPath = join5(cwd, file);
-    if (existsSync(fullPath)) targets.push(fullPath);
+    if (existsSync2(fullPath)) targets.push(fullPath);
   }
   for (const dir of SCAN_DIRS) {
     const fullPath = join5(cwd, dir);
-    if (existsSync(fullPath)) targets.push(...collectDirFiles(fullPath, 0));
+    if (existsSync2(fullPath)) targets.push(...collectDirFiles(fullPath, 0));
   }
   const warnings = [];
   for (const target of targets) {
@@ -1416,7 +1465,7 @@ async function main() {
       console.log("OMP build-fix: use /build-fix in Copilot CLI to diagnose and fix build/CI failures automatically.");
       break;
     case "design":
-      console.log("OMP design: use /omp:design in Copilot CLI to generate UI/UX designs and frontend components.");
+      console.log("OMP design: use /design in Copilot CLI to generate UI/UX designs and frontend components.");
       break;
     case "web-clone":
       console.log("OMP web-clone: use /web-clone in Copilot CLI to clone and adapt a web page/design to your codebase.");
@@ -1445,10 +1494,10 @@ async function printHud() {
 }
 async function runPsm(_args) {
   console.log("PSM commands:");
-  console.log("  /omp:psm create <name>   Create isolated worktree session");
-  console.log("  /omp:psm list           List active sessions");
-  console.log("  /omp:psm switch <name>  Switch to session");
-  console.log("  /omp:psm destroy <name> Destroy session");
+  console.log("  /psm create <name>   Create isolated worktree session");
+  console.log("  /psm list           List active sessions");
+  console.log("  /psm switch <name>  Switch to session");
+  console.log("  /psm destroy <name> Destroy session");
 }
 async function runHook(args) {
   const hookId = args[0];
@@ -1462,14 +1511,14 @@ async function runHook(args) {
 }
 async function runBench(_args) {
   console.log("SWE-bench requires Node.js subprocess with Python evaluation harness.");
-  console.log("Usage: /omp:swe-bench --suite lite --compare baseline");
+  console.log("Usage: /swe-bench --suite lite --compare baseline");
 }
 async function runCancel() {
   try {
-    const { rmSync, existsSync: existsSync2 } = await import("fs");
+    const { rmSync, existsSync: existsSync3 } = await import("fs");
     const { join: join7 } = await import("path");
     const statePath = join7(process.cwd(), ".omp", "state");
-    if (existsSync2(statePath)) {
+    if (existsSync3(statePath)) {
       rmSync(statePath, { recursive: true, force: true });
       console.log("OMP: active session cancelled. .omp/state/ cleared.");
     } else {
@@ -1492,7 +1541,7 @@ async function runHelp() {
     }
     console.log(`
 Total: ${SKILL_REGISTRY2.length} skills`);
-    console.log("\nUsage: /omp:<skill-id> [args]");
+    console.log("\nUsage: /<skill-id> [args]");
   } catch (err) {
     console.error("OMP help failed:", err);
     process.exitCode = 1;
@@ -1500,13 +1549,13 @@ Total: ${SKILL_REGISTRY2.length} skills`);
 }
 async function runUltragoal(args) {
   try {
-    const { mkdirSync: mkdirSync3, readFileSync: readFileSync5, writeFileSync: writeFileSync2, existsSync: existsSync2 } = await import("fs");
+    const { mkdirSync: mkdirSync3, readFileSync: readFileSync5, writeFileSync: writeFileSync2, existsSync: existsSync3 } = await import("fs");
     const { join: join7 } = await import("path");
     const goalDir = join7(process.cwd(), ".omp", "ultragoal");
     const goalsPath = join7(goalDir, "goals.json");
     mkdirSync3(goalDir, { recursive: true });
     let goals = [];
-    if (existsSync2(goalsPath)) {
+    if (existsSync3(goalsPath)) {
       const parsed = JSON.parse(readFileSync5(goalsPath, "utf-8"));
       if (Array.isArray(parsed)) {
         goals = parsed;
@@ -1549,12 +1598,12 @@ async function runExternalContext(args) {
 }
 async function runRemember(args) {
   try {
-    const { mkdirSync: mkdirSync3, readdirSync: readdirSync2, writeFileSync: writeFileSync2, existsSync: existsSync2 } = await import("fs");
+    const { mkdirSync: mkdirSync3, readdirSync: readdirSync2, writeFileSync: writeFileSync2, existsSync: existsSync3 } = await import("fs");
     const { join: join7 } = await import("path");
     const memoryDir = join7(process.cwd(), ".omp", "memory");
     mkdirSync3(memoryDir, { recursive: true });
     if (args.length === 0) {
-      if (!existsSync2(memoryDir)) {
+      if (!existsSync3(memoryDir)) {
         console.log("OMP Remember: no memories found. Use: omp remember <text>");
         return;
       }
@@ -1591,12 +1640,12 @@ ${text}
 }
 async function runWriterMemory(args) {
   try {
-    const { mkdirSync: mkdirSync3, readFileSync: readFileSync5, appendFileSync: appendFileSync2, existsSync: existsSync2 } = await import("fs");
+    const { mkdirSync: mkdirSync3, readFileSync: readFileSync5, appendFileSync: appendFileSync2, existsSync: existsSync3 } = await import("fs");
     const { join: join7, dirname: dirname4 } = await import("path");
     const filePath = join7(process.cwd(), ".omp", "writer-memory.md");
     mkdirSync3(dirname4(filePath), { recursive: true });
     if (args.length === 0) {
-      if (!existsSync2(filePath)) {
+      if (!existsSync3(filePath)) {
         console.log("OMP Writer Memory: no style notes found. Use: omp writer-memory <style-note>");
         return;
       }

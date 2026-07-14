@@ -159,7 +159,7 @@ async function runBaseSetup(): Promise<void> {
   console.log("  Run 'omp setup --mcp-only' to configure external MCP servers.");
   console.log("  Copilot experimental mode and status line are now configured in ~/.copilot/config.json.");
   console.log("  Restart Copilot CLI after setup so the new config is loaded.");
-  console.log("  Or run '/omp:setup' from within a Copilot session.");
+  console.log("  Or run '/omp-setup' from within a Copilot session.");
 }
 
 // ---------------------------------------------------------------------------

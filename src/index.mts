@@ -148,7 +148,7 @@ async function main() {
       console.log("OMP build-fix: use /build-fix in Copilot CLI to diagnose and fix build/CI failures automatically.");
       break;
     case "design":
-      console.log("OMP design: use /omp:design in Copilot CLI to generate UI/UX designs and frontend components.");
+      console.log("OMP design: use /design in Copilot CLI to generate UI/UX designs and frontend components.");
       break;
     case "web-clone":
       console.log("OMP web-clone: use /web-clone in Copilot CLI to clone and adapt a web page/design to your codebase.");
@@ -181,10 +181,10 @@ async function printHud() {
 async function runPsm(_args: string[]) {
   // Delegate to PSM skill — just print guidance
   console.log("PSM commands:");
-  console.log("  /omp:psm create <name>   Create isolated worktree session");
-  console.log("  /omp:psm list           List active sessions");
-  console.log("  /omp:psm switch <name>  Switch to session");
-  console.log("  /omp:psm destroy <name> Destroy session");
+  console.log("  /psm create <name>   Create isolated worktree session");
+  console.log("  /psm list           List active sessions");
+  console.log("  /psm switch <name>  Switch to session");
+  console.log("  /psm destroy <name> Destroy session");
 }
 
 async function runHook(args: string[]) {
@@ -202,7 +202,7 @@ async function runHook(args: string[]) {
 
 async function runBench(_args: string[]) {
   console.log("SWE-bench requires Node.js subprocess with Python evaluation harness.");
-  console.log("Usage: /omp:swe-bench --suite lite --compare baseline");
+  console.log("Usage: /swe-bench --suite lite --compare baseline");
 }
 
 async function runCancel() {
@@ -233,7 +233,7 @@ async function runHelp() {
       console.log(`  ${id} ${skill.description}`);
     }
     console.log(`\nTotal: ${SKILL_REGISTRY.length} skills`);
-    console.log("\nUsage: /omp:<skill-id> [args]");
+    console.log("\nUsage: /<skill-id> [args]");
   } catch (err) {
     console.error("OMP help failed:", err);
     process.exitCode = 1;
