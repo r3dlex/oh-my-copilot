@@ -2,11 +2,11 @@
 
 > **Sister projects:** [oh-my-claudecode (OMC)](https://github.com/Yeachan-Heo/oh-my-claudecode) | [oh-my-codex (OMX)](https://github.com/Yeachan-Heo/oh-my-codex) | [oh-my-githubcopilot (OMP)](https://github.com/r3dlex/oh-my-githubcopilot) | [oh-my-antigravity (OMG)](https://github.com/r3dlex/oh-my-antigravity) | [oh-my-auggie (OMA)](https://github.com/r3dlex/oh-my-auggie)
 
-**GitHub Copilot CLI를 위한 멀티 에이전트 오케스트레이션. 학습 곡선은 없습니다.**
+**GitHub Copilot CLI를 위한 멀티 에이전트 오케스트레이션.**
 
-_GitHub Copilot CLI를 새로 배우지 마세요. 그냥 omp를 쓰세요._
+[Quick Start](README.md#quick-start) • [Mental model](README.md#mental-model) • [Troubleshooting](README.md#troubleshooting) • [Discord](https://discord.gg/PUwSMR9XNk)
 
-[Get Started](#quick-start) • [CLI Reference](#cli-reference) • [Workflows](#workflows) • [Discord](https://discord.gg/PUwSMR9XNk)
+> **Canonical guide:** See [README.md](README.md) for the current detailed installation, safety, limits, and troubleshooting guide.
 
 ---
 
@@ -23,16 +23,15 @@ GitHub Copilot은 이미 많은 개발자가 도움을 요청하는 곳입니다
 
 ```bash
 npm install -g oh-my-githubcopilot
-omp setup --scope project
-omp
+omp install
 ```
 
 설정 후 `/` 명령이 보이도록 CLI를 다시 시작하세요.
 
 ```bash
-omp doctor              # check prerequisites
-omp team run --task "..." --workers 2   # parallel work
-omp hud --watch         # live status
+omp version             # verify the installed version
+omp doctor              # check stale 2.0 agent references
+omp hud --watch         # optional live HUD view
 ```
 
 ---
@@ -41,12 +40,11 @@ omp hud --watch         # live status
 
 | Feature | Description |
 |---------|-------------|
-| **Specialized Agents** | 23+ agents (analyst, architect, executor, debugger, critic, verifier, test-engineer, writer, and more) |
+| **Specialized Agents** | Agent roles for analysis, architecture, execution, debugging, review, testing, documentation, and more |
 | **Parallel Team Mode** | tmux-based multi-worker orchestration with shared task state |
-| **Workflow Skills** | 39 skills built in — plan, deep-interview, ralph, autopilot, ultrawork, code-review, and more |
+| **Workflow Skills** | 59 skills built in — plan, deep-interview, ralph, autopilot, ultrawork, code-review, and more |
 | **Persistent Hooks** | Automatic tool tracking, project memory, session management |
 | **Real-time HUD** | Live status overlay showing agents, costs, and progress |
-| **CI/CD Ready** | Verification gates, test integration, release workflows |
 | **Multilingual** | README in 12 languages |
 
 ---
@@ -56,13 +54,11 @@ omp hud --watch         # live status
 
 | Command | Description |
 |---------|-------------|
-| `omp` | Launch interactive session |
-| `omp setup` | Configure GitHub Copilot CLI integration |
-| `omp doctor` | Check prerequisites and fix issues |
-| `omp team run` | Start parallel team execution |
-| `omp team status` | Check team progress |
+| `omp install` | Register OMP with GitHub Copilot CLI |
+| `omp version` | Show the installed OMP version |
+| `omp doctor` | Check for stale 2.0 agent references |
+| `omp help` | Show the packaged skill catalog |
 | `omp hud --watch` | Show live status overlay |
-| `omp trace` | Show execution trace |
 
 See the [full documentation](https://github.com/r3dlex/oh-my-githubcopilot#readme) for all commands.
 
@@ -108,11 +104,8 @@ omp ships execution-mode and planning-mode workflows as built-in skills.
 
 tmux-first multi-worker orchestration with persistent state and lifecycle controls.
 
-```bash
-omp team run --task "review src/ for reliability gaps" --workers 4
-omp team status --team omp --json
-omp team resume --team omp
-omp team shutdown --team omp --force
+```text
+/omp:team review src/ for reliability gaps
 ```
 
 GitHub Copilot CLI에서 team 모드는 `.copilot/`의 에이전트와 스킬 자산을 동기화하고 터미널 워커는 지속적인 OMX/OMP 상태로 조율됩니다. 구현, 검증, 문서화, 릴리스 레인이 분리되어야 하고 브랜치를 진행하기 전에 각 레인의 증거가 필요할 때 사용하세요.
