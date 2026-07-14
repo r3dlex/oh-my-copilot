@@ -46,7 +46,7 @@ Then open Copilot CLI in your project and start a packaged workflow:
 /team review src/ for reliability gaps
 ```
 
-Your first observable in-session success is the selected workflow starting. The plugin manifest exposes each packaged skill as `/<skill-id>`; use `omp help` in the terminal to list the installed IDs and descriptions.
+Your first observable in-session success is the selected workflow starting. The plugin manifest exposes packaged skill IDs as `/<skill-id>` commands when the Copilot host does not reserve that command name; use `omp help` in the terminal to list the packaged IDs and descriptions.
 
 ## Mental model
 
@@ -77,11 +77,12 @@ Use the terminal companion for installation and local diagnostics:
 Use slash commands **inside GitHub Copilot CLI** for agent workflows:
 
 ```text
-/help
 /deep-interview clarify the requirements before implementation
 /team implement the approved plan
 /code-review review the current changes
 ```
+
+Some slash-command names are reserved by Copilot itself. For example, `/help` opens Copilot's native help guide even though OMP packages a skill with the same ID; use the terminal command `omp help` for OMP's skill catalog.
 
 Availability still depends on the running Copilot host and the selected workflow. In particular, attached-terminal or `tmux` coordination is only available where that runtime exists. Optional MCP servers also require their own configuration and credentials.
 
