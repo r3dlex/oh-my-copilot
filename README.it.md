@@ -105,7 +105,7 @@ omp ships execution-mode and planning-mode workflows as built-in skills.
 tmux-first multi-worker orchestration with persistent state and lifecycle controls.
 
 ```text
-/omp:team review src/ for reliability gaps
+/team review src/ for reliability gaps
 ```
 
 Per GitHub Copilot CLI, la modalità team mantiene sincronizzati gli asset agenti e skill in `.copilot/` mentre i worker del terminale si coordinano tramite stato durevole OMX/OMP. Usala quando un’attività Copilot richiede corsie separate per implementazione, verifica, documentazione o release e vuoi evidenza prima di avanzare il branch.

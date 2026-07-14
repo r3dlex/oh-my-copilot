@@ -105,7 +105,7 @@ omp ships execution-mode and planning-mode workflows as built-in skills.
 tmux-first multi-worker orchestration with persistent state and lifecycle controls.
 
 ```text
-/omp:team review src/ for reliability gaps
+/team review src/ for reliability gaps
 ```
 
 GitHub Copilot CLI에서 team 모드는 `.copilot/`의 에이전트와 스킬 자산을 동기화하고 터미널 워커는 지속적인 OMX/OMP 상태로 조율됩니다. 구현, 검증, 문서화, 릴리스 레인이 분리되어야 하고 브랜치를 진행하기 전에 각 레인의 증거가 필요할 때 사용하세요.

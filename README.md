@@ -15,10 +15,10 @@ Translations: [Deutsch](README.de.md) • [Español](README.es.md) • [Françai
 ## Requirements
 
 - [Node.js](https://nodejs.org/) 22 or newer and `npm`
-- A working, authenticated GitHub Copilot CLI 1.0.60 or newer
+- A working, authenticated GitHub Copilot CLI release with plugin and skill support
 - A terminal supported by Copilot CLI
 
-Copilot CLI 1.0.60 introduced the extension API used for native slash commands; older releases can only fall back to keyword triggers. `tmux` is optional. It is useful for the session-management and terminal HUD integrations that explicitly use it, but it is not required for the Quick Start.
+OMP's shipped plugin manifest exposes its workflows as Copilot skills. `tmux` is optional. It is useful for the session-management and terminal HUD integrations that explicitly use it, but it is not required for the Quick Start.
 
 ## Quick Start
 
@@ -40,13 +40,13 @@ omp help
 
 Expected result: `omp version` prints a line such as `oh-my-githubcopilot v2.0.0` (the version number may be newer), and `omp help` finishes its catalog with `Total: 59 skills`.
 
-Then open Copilot CLI in your project and run:
+Then open Copilot CLI in your project and start a packaged workflow:
 
 ```text
-/omp:help
+/team review src/ for reliability gaps
 ```
 
-Your first observable in-session success is the **OMP Skills Catalog**, followed by the available skill IDs and descriptions. You can now invoke a listed workflow with `/omp:<skill-id>`.
+Your first observable in-session success is the selected workflow starting. The plugin manifest exposes each packaged skill as `/<skill-id>`; use `omp help` in the terminal to list the installed IDs and descriptions.
 
 ## Mental model
 
@@ -77,10 +77,10 @@ Use the terminal companion for installation and local diagnostics:
 Use slash commands **inside GitHub Copilot CLI** for agent workflows:
 
 ```text
-/omp:help
-/omp:deep-interview clarify the requirements before implementation
-/omp:team implement the approved plan
-/omp:code-review review the current changes
+/help
+/deep-interview clarify the requirements before implementation
+/team implement the approved plan
+/code-review review the current changes
 ```
 
 Availability still depends on the running Copilot host and the selected workflow. In particular, attached-terminal or `tmux` coordination is only available where that runtime exists. Optional MCP servers also require their own configuration and credentials.
@@ -115,7 +115,7 @@ omp doctor
 | Symptom | Fix |
 | --- | --- |
 | `omp: command not found` | Re-run `npm install -g oh-my-githubcopilot`, then ensure npm's global binary directory is on `PATH`. |
-| `omp version` works, but `/omp:help` is missing | Run `omp install`, fully restart Copilot CLI, and try `/omp:help` again. |
+| `omp version` works, but OMP skills such as `/team` are missing | Run `omp install`, fully restart Copilot CLI, and try `/team` again. |
 | `omp install` reports success, but the plugin is still unavailable | Inspect `~/.copilot/settings.json` for the `oh-my-githubcopilot` marketplace and enabled-plugin entries. If the prior file was invalid JSON, `omp install` rebuilt it; restore unrelated settings from your backup, then restart Copilot CLI. |
 | `omp doctor` exits non-zero | Read each reported file and line, then replace the stale `@agent` ID with the suggested 2.0 name. |
 | `omp hud` says `no active session` | Installation is working, but no hook has emitted session state yet. Start an OMP workflow in Copilot CLI; use `omp hud --watch` only when you want a live terminal view. |
@@ -128,7 +128,7 @@ Still stuck? Search [existing issues](https://github.com/r3dlex/oh-my-githubcopi
 
 - **Choose a workflow:** [`spec/SKILLS.md`](spec/SKILLS.md) and the packaged [`skills/`](skills/) guides
 - **Understand agents and delegation:** [`AGENTS.md`](AGENTS.md) and [`spec/AGENTS_SPEC.md`](spec/AGENTS_SPEC.md)
-- **Understand the current plugin + extension architecture:** [ADR-0002](docs/architecture/adr/ADR-0002-plugin-plus-extension-architecture.md); [`spec/PLUGIN.md`](spec/PLUGIN.md) contains lower-level background and may lag the shipped manifest
+- **Understand the plugin architecture and its design history:** [ADR-0002](docs/architecture/adr/ADR-0002-plugin-plus-extension-architecture.md); [`spec/PLUGIN.md`](spec/PLUGIN.md) contains lower-level background and may lag the shipped manifest
 - **Configure or embed the HUD:** [`spec/HUD.md`](spec/HUD.md)
 - **Understand state and worktree sessions:** [`spec/PSM.md`](spec/PSM.md)
 - **Inspect hooks and failure behavior:** [`spec/HOOKS.md`](spec/HOOKS.md)
