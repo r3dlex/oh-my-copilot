@@ -29,7 +29,7 @@ npm install -g oh-my-githubcopilot
 omp install
 ```
 
-`omp install` updates `~/.copilot/settings.json` to enable the local OMP marketplace entry, plugin, experimental mode, and status line. Restart Copilot CLI so it reloads that configuration.
+`omp install` registers the packaged plugin through `copilot plugin install`, then updates the legacy `$COPILOT_HOME/settings.json` integration when `COPILOT_HOME` is set (otherwise `~/.copilot/settings.json`) for OMP's experimental mode and status line. Restart Copilot CLI so it reloads the plugin and configuration.
 
 Confirm the terminal companion is installed:
 
@@ -68,7 +68,7 @@ Use the terminal companion for installation and local diagnostics:
 
 | Terminal command | What it does |
 | --- | --- |
-| `omp install` | Register the packaged plugin in Copilot settings |
+| `omp install` | Register the packaged plugin with Copilot CLI and configure its status line |
 | `omp version` | Print the installed OMP package version |
 | `omp doctor` | Scan project instructions and `.omp` state for stale 2.0 agent IDs |
 | `omp help` | Print the packaged skill catalog |
@@ -98,6 +98,7 @@ Restart Copilot CLI after reinstalling so its plugin path and bundled assets are
 ```bash
 omp version
 omp doctor
+copilot plugin list
 ```
 
 `omp doctor` is intentionally narrow: it checks repository instructions and OMP state for agent IDs renamed or removed by the 2.0 parity migration. It is not a general Copilot authentication, network, or package-manager health check.
@@ -107,7 +108,7 @@ omp doctor
 - Commit or stash important work before running autonomous or multi-agent workflows; agents may execute commands and edit repository files within the permissions you grant Copilot CLI.
 - Review the active repository instructions and workflow prompt before starting a long-running mode.
 - Treat `./.omp/` as project-local operational data: inspect generated plans and configuration before sharing or committing them. Treat `~/.omp/` as user-level runtime data: keep its session, HUD, log, and MCP state out of repositories and backups you share.
-- `omp install` changes `~/.copilot/settings.json`. With valid JSON it merges plugin and marketplace entries, but it replaces the top-level status-line setting. With missing or invalid JSON it rebuilds the file from OMP defaults. Back up custom settings first if you want an easy rollback.
+- `omp install` changes `$COPILOT_HOME/settings.json` when `COPILOT_HOME` is set, otherwise `~/.copilot/settings.json`. With valid JSON it merges plugin and marketplace entries, but it replaces the top-level status-line setting. With missing or invalid JSON it rebuilds the file from OMP defaults. Back up custom settings first if you want an easy rollback.
 - Keep credentials out of prompts and repository files. Configure optional MCP integrations through their intended credential flow.
 - Report vulnerabilities privately through [GitHub Security Advisories](https://github.com/r3dlex/oh-my-githubcopilot/security/advisories), not a public issue.
 
@@ -117,7 +118,7 @@ omp doctor
 | --- | --- |
 | `omp: command not found` | Re-run `npm install -g oh-my-githubcopilot`, then ensure npm's global binary directory is on `PATH`. |
 | `omp version` works, but OMP skills such as `/team` are missing | Run `omp install`, fully restart Copilot CLI, and try `/team` again. |
-| `omp install` reports success, but the plugin is still unavailable | Inspect `~/.copilot/settings.json` for the `oh-my-githubcopilot` marketplace and enabled-plugin entries. If the prior file was invalid JSON, `omp install` rebuilt it; restore unrelated settings from your backup, then restart Copilot CLI. |
+| `omp install` reports success, but the plugin is still unavailable | Run `copilot plugin list` and confirm `oh-my-githubcopilot` is installed, then fully restart Copilot CLI. If the plugin is listed but the status line is missing, inspect `$COPILOT_HOME/settings.json` when `COPILOT_HOME` is set, otherwise `~/.copilot/settings.json`; if the prior file was invalid JSON, `omp install` rebuilt it, so restore unrelated settings from your backup. |
 | `omp doctor` exits non-zero | Read each reported file and line, then replace the stale `@agent` ID with the suggested 2.0 name. |
 | `omp hud` says `no active session` | Installation is working, but no hook has emitted session state yet. Start an OMP workflow in Copilot CLI; use `omp hud --watch` only when you want a live terminal view. |
 | A workflow needs `tmux` or an attached runtime | Run it from a terminal environment that provides that integration, or choose an in-session workflow that does not require terminal panes. |

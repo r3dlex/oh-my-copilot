@@ -1,26 +1,70 @@
-import { mkdtemp, readFile, rm, writeFile, mkdir } from "fs/promises";
+import { access, mkdtemp, readFile, rm, writeFile, mkdir } from "fs/promises";
 import { readFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import * as path from "path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { runInstall } from "../../src/cli/install.mts";
 
 let tmpDir: string;
 let settingsPath: string;
+let runCommand: ReturnType<typeof vi.fn>;
 
 beforeEach(async () => {
   tmpDir = await mkdtemp(join(tmpdir(), "omp-install-"));
   settingsPath = join(tmpDir, "settings.json");
+  runCommand = vi.fn(() => ({ status: 0, stdout: "", stderr: "" }));
 });
 
 afterEach(async () => {
+  vi.unstubAllEnvs();
   await rm(tmpDir, { recursive: true, force: true });
 });
 
 describe("runInstall", () => {
+  const install = () => runInstall(settingsPath, { runCommand });
+
+  it("registers the package root through the supported Copilot plugin command", async () => {
+    await install();
+
+    expect(runCommand).toHaveBeenCalledOnce();
+    expect(runCommand).toHaveBeenCalledWith("copilot", ["plugin", "install", process.cwd()]);
+  });
+
+  it("uses COPILOT_HOME for the default settings path", async () => {
+    const copilotHome = join(tmpDir, "copilot-home");
+    const fallbackHome = join(tmpDir, "fallback-home");
+    vi.stubEnv("HOME", fallbackHome);
+    vi.stubEnv("COPILOT_HOME", copilotHome);
+
+    await runInstall(undefined, { runCommand });
+
+    const settings = JSON.parse(
+      await readFile(join(copilotHome, "settings.json"), "utf-8"),
+    ) as Record<string, unknown>;
+    expect(settings).toHaveProperty("enabledPlugins");
+    await expect(access(join(fallbackHome, ".copilot", "settings.json"))).rejects.toThrow();
+  });
+
+  it("fails closed when the Copilot CLI is missing", async () => {
+    const error = Object.assign(new Error("spawnSync copilot ENOENT"), { code: "ENOENT" });
+    runCommand.mockReturnValue({ error, status: null, stdout: "", stderr: "" });
+
+    await expect(install()).rejects.toThrow("`copilot` was not found on PATH");
+    await expect(access(settingsPath)).rejects.toThrow();
+  });
+
+  it("fails closed when Copilot rejects plugin registration", async () => {
+    runCommand.mockReturnValue({ status: 2, stdout: "", stderr: "invalid plugin manifest" });
+
+    await expect(install()).rejects.toThrow(
+      "`copilot plugin install` failed with exit code 2: invalid plugin manifest",
+    );
+    await expect(access(settingsPath)).rejects.toThrow();
+  });
+
   it("missing file creates settings with all 4 required keys", async () => {
-    await runInstall(settingsPath);
+    await install();
 
     const raw = readFileSync(settingsPath, "utf-8");
     const settings = JSON.parse(raw) as Record<string, unknown>;
@@ -35,10 +79,10 @@ describe("runInstall", () => {
   });
 
   it("is idempotent — two calls produce identical file content", async () => {
-    await runInstall(settingsPath);
+    await install();
     const first = readFileSync(settingsPath, "utf-8");
 
-    await runInstall(settingsPath);
+    await install();
     const second = readFileSync(settingsPath, "utf-8");
 
     expect(JSON.parse(second)).toEqual(JSON.parse(first));
@@ -55,7 +99,7 @@ describe("runInstall", () => {
       "utf-8"
     );
 
-    await runInstall(settingsPath);
+    await install();
 
     const settings = JSON.parse(readFileSync(settingsPath, "utf-8")) as {
       footer: { showVersion: boolean };
@@ -68,7 +112,7 @@ describe("runInstall", () => {
   });
 
   it("statusLine.command and marketplace path are absolute", async () => {
-    await runInstall(settingsPath);
+    await install();
 
     const settings = JSON.parse(readFileSync(settingsPath, "utf-8")) as {
       statusLine: { command: string };
@@ -86,7 +130,7 @@ describe("runInstall", () => {
     await mkdir(path.dirname(settingsPath), { recursive: true });
     await writeFile(settingsPath, "not json", "utf-8");
 
-    await runInstall(settingsPath);
+    await install();
 
     const raw = readFileSync(settingsPath, "utf-8");
     expect(() => JSON.parse(raw)).not.toThrow();
@@ -108,7 +152,7 @@ describe("runInstall", () => {
       "utf-8"
     );
 
-    await runInstall(settingsPath);
+    await install();
 
     const settings = JSON.parse(readFileSync(settingsPath, "utf-8")) as {
       extraKnownMarketplaces: Record<string, unknown>;
@@ -132,7 +176,7 @@ describe("runInstall", () => {
       "utf-8"
     );
 
-    await runInstall(settingsPath);
+    await install();
 
     const settings = JSON.parse(readFileSync(settingsPath, "utf-8")) as {
       extraKnownMarketplaces: Record<string, { source: { source: string; path: string } }>;
