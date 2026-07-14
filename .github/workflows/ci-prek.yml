@@ -9,6 +9,7 @@ on:
 jobs:
   _prek-check-self-hosted:
     name: "Pre-commit Hooks (self-hosted)"
+    if: vars.SELF_HOSTED_CI_ENABLED == 'true'
     runs-on: [self-hosted, ubuntu-latest]
     continue-on-error: true
     outputs:
@@ -20,7 +21,7 @@ jobs:
       - name: Run prek
         uses: j178/prek-action@v2
         with:
-          extra-args: '--all-files'
+          extra-args: "--all-files"
 
       - id: mark
         if: success()
@@ -43,4 +44,4 @@ jobs:
         if: needs._prek-check-self-hosted.outputs.passed != 'true'
         uses: j178/prek-action@v2
         with:
-          extra-args: '--all-files'
+          extra-args: "--all-files"

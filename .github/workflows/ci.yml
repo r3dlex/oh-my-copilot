@@ -9,6 +9,7 @@ jobs:
   # ==========================================================================
   _build-self-hosted:
     name: "build (self-hosted)"
+    if: vars.SELF_HOSTED_CI_ENABLED == 'true'
     runs-on: [self-hosted, ubuntu-latest]
     continue-on-error: true
     outputs:
@@ -68,7 +69,7 @@ jobs:
   _test-self-hosted:
     name: "test (self-hosted)"
     needs: _build-self-hosted
-    if: always() && needs._build-self-hosted.outputs.passed == 'true'
+    if: always() && vars.SELF_HOSTED_CI_ENABLED == 'true' && needs._build-self-hosted.outputs.passed == 'true'
     runs-on: [self-hosted, ubuntu-latest]
     continue-on-error: true
     outputs:
@@ -134,7 +135,7 @@ jobs:
   _coverage-self-hosted:
     name: "coverage (self-hosted)"
     needs: _build-self-hosted
-    if: always() && needs._build-self-hosted.outputs.passed == 'true'
+    if: always() && vars.SELF_HOSTED_CI_ENABLED == 'true' && needs._build-self-hosted.outputs.passed == 'true'
     runs-on: [self-hosted, ubuntu-latest]
     timeout-minutes: 15
     continue-on-error: true
@@ -184,7 +185,7 @@ jobs:
   _vscode-omp-self-hosted:
     name: "vscode-omp (self-hosted)"
     needs: _build-self-hosted
-    if: always() && needs._build-self-hosted.outputs.passed == 'true'
+    if: always() && vars.SELF_HOSTED_CI_ENABLED == 'true' && needs._build-self-hosted.outputs.passed == 'true'
     runs-on: [self-hosted, ubuntu-latest]
     continue-on-error: true
     outputs:
